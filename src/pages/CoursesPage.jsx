@@ -13,7 +13,7 @@ export function CoursesPage() {
       {/* Page Header */}
       <section className="pt-32 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-primary-50 via-white to-accent-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="max-w-7xl mx-auto text-center">
-          <nav className="flex justify-center mb-4">
+          <nav className="flex mb-4">
             <ol className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
               <li>
                 <a href="/" className="hover:text-primary-600 dark:hover:text-primary-400">Home</a>

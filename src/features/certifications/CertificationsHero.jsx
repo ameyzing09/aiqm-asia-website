@@ -7,22 +7,22 @@ export function CertificationsHero() {
       className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-primary-50 via-white to-accent-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
     >
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col items-center text-center">
-          {/* Breadcrumb */}
-          <nav className="flex justify-center mb-6">
-            <ol className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-              <li>
-                <a href="/" className="hover:text-primary-600 dark:hover:text-primary-400">Home</a>
-              </li>
-              <li>
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                </svg>
-              </li>
-              <li className="font-medium text-gray-900 dark:text-white">Certifications</li>
-            </ol>
-          </nav>
+        {/* Breadcrumb */}
+        <nav className="flex mb-6">
+          <ol className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+            <li>
+              <a href="/" className="hover:text-primary-600 dark:hover:text-primary-400">Home</a>
+            </li>
+            <li>
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+              </svg>
+            </li>
+            <li className="font-medium text-gray-900 dark:text-white">Certifications</li>
+          </ol>
+        </nav>
 
+        <div className="flex flex-col items-center text-center">
           {/* Badge */}
           <div className="inline-flex items-center px-4 py-2 bg-primary-100 dark:bg-primary-900/30 rounded-full mb-6">
             <svg className="w-5 h-5 text-primary-600 dark:text-primary-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
