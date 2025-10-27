@@ -1,20 +1,13 @@
-import { Navigation } from './features/navigation/Navigation'
-import { Hero } from './features/hero/Hero'
-import { QuickStats } from './features/stats/QuickStats'
-import { FeaturedCourses } from './features/courses/FeaturedCourses'
-import { Testimonials } from './features/testimonials/Testimonials'
-import { Footer } from './features/footer/Footer'
+import { Routes, Route } from 'react-router-dom'
+import { HomePage } from './pages/HomePage'
+import { CoursesPage } from './pages/CoursesPage'
 
 function App() {
   return (
-    <div className="min-h-screen">
-      <Navigation />
-      <Hero />
-      <QuickStats />
-      <FeaturedCourses />
-      <Testimonials />
-      <Footer />
-    </div>
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/courses" element={<CoursesPage />} />
+    </Routes>
   )
 }
 

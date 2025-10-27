@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { NAV_LINKS } from '../../constants/navigation'
 import { useTheme } from '../../hooks/useTheme'
 import { Button } from '../../components/Button'
@@ -28,7 +29,7 @@ export function Navigation() {
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <div className="flex items-center">
-            <a href="#home" className="flex items-center space-x-3">
+            <Link to="/" className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-primary-800 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-xl">AI</span>
               </div>
@@ -36,20 +37,31 @@ export function Navigation() {
                 <span className="font-bold text-xl text-gray-900 dark:text-white">AIQM India</span>
                 <span className="text-xs text-gray-600 dark:text-gray-400">Quality Excellence</span>
               </div>
-            </a>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
-            {NAV_LINKS.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors"
-              >
-                {link.name}
-              </a>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const isRoute = link.href.startsWith('/')
+              return isRoute ? (
+                <Link
+                  key={link.name}
+                  to={link.href}
+                  className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors"
+                >
+                  {link.name}
+                </Link>
+              ) : (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors"
+                >
+                  {link.name}
+                </a>
+              )
+            })}
           </div>
 
           {/* Right side controls */}
