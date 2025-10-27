@@ -5,7 +5,10 @@
       "Bash(dir:*)",
       "Bash(npm install)",
       "Bash(npm install:*)",
-      "Bash(npx tailwindcss:*)"
+      "Bash(npx tailwindcss:*)",
+      "Bash(del srcApp.css)",
+      "Bash(npm run dev:*)",
+      "Bash(npm uninstall:*)"
     ],
     "deny": [],
     "ask": []
