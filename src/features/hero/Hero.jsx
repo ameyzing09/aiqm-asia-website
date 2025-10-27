@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Button } from '../../components/Button'
 
 export function Hero() {
@@ -19,9 +20,11 @@ export function Hero() {
             95,000+ professionals trained | 40,000+ belts certified | 13 countries served
           </p>
           <div className="flex flex-col sm:flex-row gap-4 mt-8 w-full sm:w-auto sm:justify-center">
-            <Button href="#courses" variant="primary" size="lg">
-              Explore Courses
-            </Button>
+            <Link to="/courses">
+              <Button variant="primary" size="lg">
+                Explore Courses
+              </Button>
+            </Link>
             <Button href="#certifications" variant="secondary" size="lg">
               Get Certified
             </Button>
