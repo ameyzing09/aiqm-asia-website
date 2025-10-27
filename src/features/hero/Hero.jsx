@@ -25,9 +25,11 @@ export function Hero() {
                 Explore Courses
               </Button>
             </Link>
-            <Button href="#certifications" variant="secondary" size="lg">
-              Get Certified
-            </Button>
+            <Link to="/certifications">
+              <Button variant="secondary" size="lg">
+                Get Certified
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
