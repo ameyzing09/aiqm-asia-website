@@ -3,7 +3,7 @@ export const NAV_LINKS = [
   { name: 'Courses', href: '/courses' },
   { name: 'Certifications', href: '/certifications' },
   { name: 'Consultancy', href: '/consultancy' },
-  { name: 'About', href: '#about' },
+  { name: 'About', href: '/about' },
   { name: 'Contact', href: '#contact' },
 ]
 
@@ -29,7 +29,7 @@ export const FOOTER_LINKS = [
   { name: 'Courses', href: '#courses' },
   { name: 'Certifications', href: '#certifications' },
   { name: 'Consultancy', href: '#consultancy' },
-  { name: 'About Us', href: '#about' },
+  { name: 'About Us', href: '/about' },
 ]
 
 export const CONTACT_INFO = {

@@ -3,6 +3,7 @@ import { HomePage } from './pages/HomePage'
 import { CoursesPage } from './pages/CoursesPage'
 import { CertificationsPage } from './pages/CertificationsPage'
 import { ConsultancyPage } from './pages/ConsultancyPage'
+import { AboutPage } from './pages/AboutPage'
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       <Route path="/courses" element={<CoursesPage />} />
       <Route path="/certifications" element={<CertificationsPage />} />
       <Route path="/consultancy" element={<ConsultancyPage />} />
+      <Route path="/about" element={<AboutPage />} />
     </Routes>
   )
 }
