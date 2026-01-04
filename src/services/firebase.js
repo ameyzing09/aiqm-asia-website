@@ -5,13 +5,19 @@ import { getStorage } from 'firebase/storage'
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCeClMxBQx9Vw6N_7llTd56RBIgOUzdiaI",
-  authDomain: "aiqm-asia.firebaseapp.com",
-  databaseURL: "https://aiqm-asia-default-rtdb.asia-southeast1.firebasedatabase.app/",
-  projectId: "aiqm-asia",
-  storageBucket: "aiqm-asia.firebasestorage.app",
-  messagingSenderId: "929678785166",
-  appId: "1:929678785166:web:0b1a206c6ab7e1b34ee7df"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
+}
+
+// Warn if env variables are missing (helpful during local dev)
+if (!import.meta.env.VITE_FIREBASE_API_KEY) {
+  // eslint-disable-next-line no-console
+  console.warn('VITE_FIREBASE_API_KEY is not set. Add Firebase config to .env or .env.local')
 }
 
 // Prevent duplicate initialization during hot-reload
