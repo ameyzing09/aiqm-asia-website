@@ -93,8 +93,8 @@ export function ConsultancyCTA() {
               <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
             </svg>
             <p className="text-lg text-white italic mb-4">
-              "AIQM India's consultancy services transformed our operations. We achieved a 40% efficiency gain
-              and ₹8 Cr in annual savings within the first year."
+              &quot;AIQM India&apos;s consultancy services transformed our operations. We achieved a 40% efficiency gain
+              and ₹8 Cr in annual savings within the first year.&quot;
             </p>
             <div className="text-primary-100">
               <span className="font-semibold">VP Operations</span> • Fortune 500 Logistics Company

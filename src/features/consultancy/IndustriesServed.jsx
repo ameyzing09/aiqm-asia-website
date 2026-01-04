@@ -154,7 +154,7 @@ export function IndustriesServed() {
         {/* Additional Info */}
         <div className="mt-12 text-center">
           <p className="text-gray-600 dark:text-gray-400">
-            Don't see your industry? We work across 50+ sectors.{' '}
+            Don&apos;t see your industry? We work across 50+ sectors.{' '}
             <a href="#request-consultation" className="text-primary-600 dark:text-primary-400 font-semibold hover:underline">
               Contact us
             </a>

@@ -10,7 +10,7 @@ export function Hero() {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col items-center text-center">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6 animate-fade-in">
-            India's Leading Institute for
+            India&apos;s Leading Institute for
             <br />
             <span className="text-primary-600 dark:text-primary-400">
               Lean Six Sigma & Quality Excellence

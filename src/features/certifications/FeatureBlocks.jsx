@@ -80,7 +80,7 @@ export function FeatureBlocks() {
         </div>
 
         <div className="space-y-8">
-          {features.map((feature, index) => (
+          {features.map((feature) => (
             <div
               key={feature.title}
               ref={feature.ref}
