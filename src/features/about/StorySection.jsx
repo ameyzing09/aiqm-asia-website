@@ -48,7 +48,7 @@ export function StorySection() {
             Our Story
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            From humble beginnings to becoming India's premier quality excellence institute
+            From humble beginnings to becoming India&apos;s premier quality excellence institute
           </p>
         </div>
 
@@ -80,7 +80,7 @@ export function StorySection() {
                 AIQM India began with a singular vision: to transform quality management practices across India.
               </p>
               <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-                What started as a small training center in Mumbai has grown into India's most trusted partner in
+                What started as a small training center in Mumbai has grown into India&apos;s most trusted partner in
                 quality excellence, serving organizations across <span className="font-bold text-primary-600 dark:text-primary-400">13 countries</span> and
                 training over <span className="font-bold text-primary-600 dark:text-primary-400">95,000 professionals</span>.
               </p>

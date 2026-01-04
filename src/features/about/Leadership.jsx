@@ -20,9 +20,9 @@ export function Leadership() {
               <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
             </svg>
             <div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Director's Message</h3>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Director&apos;s Message</h3>
               <blockquote className="text-base lg:text-lg text-gray-700 dark:text-gray-300 leading-relaxed italic">
-                "At AIQM, our mission is to empower professionals and organizations with the tools of excellence. Over the past three decades, I've had the privilege of mentoring 4,300+ Lean Six Sigma projects and training more than 40,000 professionals worldwide. Our approach blends academic rigor with practical impact — ensuring every participant leaves with skills that transform careers and businesses."
+                &quot;At AIQM, our mission is to empower professionals and organizations with the tools of excellence. Over the past three decades, I&apos;ve had the privilege of mentoring 4,300+ Lean Six Sigma projects and training more than 40,000 professionals worldwide. Our approach blends academic rigor with practical impact — ensuring every participant leaves with skills that transform careers and businesses.&quot;
               </blockquote>
             </div>
           </div>
@@ -105,7 +105,7 @@ export function Leadership() {
                     <div>
                       <p className="text-sm font-semibold text-gray-900 dark:text-white mb-1">Recognition</p>
                       <p className="text-sm text-gray-700 dark:text-gray-300">
-                        "Outstanding People of the 20th Century Award" — International Biographical Center, Cambridge, UK
+                        &quot;Outstanding People of the 20th Century Award&quot; — International Biographical Center, Cambridge, UK
                       </p>
                     </div>
                   </div>

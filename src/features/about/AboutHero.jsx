@@ -45,8 +45,8 @@ export function AboutHero() {
             </h1>
 
             <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-8 animate-slide-up">
-              India's most trusted partner in quality excellence and operational transformation.
-              For over 25 years, we've been empowering organizations and professionals with world-class
+              India&apos;s most trusted partner in quality excellence and operational transformation.
+              For over 25 years, we&apos;ve been empowering organizations and professionals with world-class
               Lean Six Sigma methodologies.
             </p>
 
