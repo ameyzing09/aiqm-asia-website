@@ -1,106 +1,137 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Primary colors - reference CSS variables for theme switching */
+  --color-primary-50: var(--theme-primary-50);
+  --color-primary-100: var(--theme-primary-100);
+  --color-primary-200: var(--theme-primary-200);
+  --color-primary-300: var(--theme-primary-300);
+  --color-primary-400: var(--theme-primary-400);
+  --color-primary-500: var(--theme-primary-500);
+  --color-primary-600: var(--theme-primary-600);
+  --color-primary-700: var(--theme-primary-700);
+  --color-primary-800: var(--theme-primary-800);
+  --color-primary-900: var(--theme-primary-900);
+
+  /* Accent colors - reference CSS variables for theme switching */
+  --color-accent-50: var(--theme-accent-50);
+  --color-accent-100: var(--theme-accent-100);
+  --color-accent-200: var(--theme-accent-200);
+  --color-accent-300: var(--theme-accent-300);
+  --color-accent-400: var(--theme-accent-400);
+  --color-accent-500: var(--theme-accent-500);
+  --color-accent-600: var(--theme-accent-600);
+  --color-accent-700: var(--theme-accent-700);
+  --color-accent-800: var(--theme-accent-800);
+  --color-accent-900: var(--theme-accent-900);
+
+  /* Custom animations */
+  --animate-spin-slow: spin 20s linear infinite;
+  --animate-fade-in: fadeIn 0.6s ease-out;
+  --animate-slide-up: slideUp 0.6s ease-out;
+}
 
 @layer base {
   :root {
     /* Professional Blue Theme - Default */
-    --color-primary-50: 239 246 255;
-    --color-primary-100: 219 234 254;
-    --color-primary-200: 191 219 254;
-    --color-primary-300: 147 197 253;
-    --color-primary-400: 96 165 250;
-    --color-primary-500: 59 130 246;
-    --color-primary-600: 37 99 235;
-    --color-primary-700: 29 78 216;
-    --color-primary-800: 30 64 175;
-    --color-primary-900: 30 58 138;
+    --theme-primary-50: #eff6ff;
+    --theme-primary-100: #dbeafe;
+    --theme-primary-200: #bfdbfe;
+    --theme-primary-300: #93c5fd;
+    --theme-primary-400: #60a5fa;
+    --theme-primary-500: #3b82f6;
+    --theme-primary-600: #2563eb;
+    --theme-primary-700: #1d4ed8;
+    --theme-primary-800: #1e40af;
+    --theme-primary-900: #1e3a8a;
 
-    --color-accent-50: 254 252 232;
-    --color-accent-100: 254 249 195;
-    --color-accent-200: 254 240 138;
-    --color-accent-300: 253 224 71;
-    --color-accent-400: 250 204 21;
-    --color-accent-500: 234 179 8;
-    --color-accent-600: 202 138 4;
-    --color-accent-700: 161 98 7;
-    --color-accent-800: 133 77 14;
-    --color-accent-900: 113 63 18;
+    --theme-accent-50: #fefce8;
+    --theme-accent-100: #fef9c3;
+    --theme-accent-200: #fef08a;
+    --theme-accent-300: #fde047;
+    --theme-accent-400: #facc15;
+    --theme-accent-500: #eab308;
+    --theme-accent-600: #ca8a04;
+    --theme-accent-700: #a16207;
+    --theme-accent-800: #854d0e;
+    --theme-accent-900: #713f12;
   }
 
   :root[data-theme="purple"] {
     /* Modern Purple Theme */
-    --color-primary-50: 250 245 255;
-    --color-primary-100: 243 232 255;
-    --color-primary-200: 233 213 255;
-    --color-primary-300: 216 180 254;
-    --color-primary-400: 192 132 252;
-    --color-primary-500: 168 85 247;
-    --color-primary-600: 147 51 234;
-    --color-primary-700: 126 34 206;
-    --color-primary-800: 107 33 168;
-    --color-primary-900: 88 28 135;
+    --theme-primary-50: #faf5ff;
+    --theme-primary-100: #f3e8ff;
+    --theme-primary-200: #e9d5ff;
+    --theme-primary-300: #d8b4fe;
+    --theme-primary-400: #c084fc;
+    --theme-primary-500: #a855f7;
+    --theme-primary-600: #9333ea;
+    --theme-primary-700: #7e22ce;
+    --theme-primary-800: #6b21a8;
+    --theme-primary-900: #581c87;
 
-    --color-accent-50: 255 241 242;
-    --color-accent-100: 255 228 230;
-    --color-accent-200: 254 205 211;
-    --color-accent-300: 253 164 175;
-    --color-accent-400: 251 113 133;
-    --color-accent-500: 244 63 94;
-    --color-accent-600: 225 29 72;
-    --color-accent-700: 190 18 60;
-    --color-accent-800: 159 18 57;
-    --color-accent-900: 136 19 55;
+    --theme-accent-50: #fff1f2;
+    --theme-accent-100: #ffe4e6;
+    --theme-accent-200: #fecdd3;
+    --theme-accent-300: #fda4af;
+    --theme-accent-400: #fb7185;
+    --theme-accent-500: #f43f5e;
+    --theme-accent-600: #e11d48;
+    --theme-accent-700: #be123c;
+    --theme-accent-800: #9f1239;
+    --theme-accent-900: #881337;
   }
 
   :root[data-theme="dark"] {
     /* Sophisticated Dark Theme */
-    --color-primary-50: 249 250 251;
-    --color-primary-100: 243 244 246;
-    --color-primary-200: 229 231 235;
-    --color-primary-300: 209 213 219;
-    --color-primary-400: 156 163 175;
-    --color-primary-500: 107 114 128;
-    --color-primary-600: 75 85 99;
-    --color-primary-700: 55 65 81;
-    --color-primary-800: 31 41 55;
-    --color-primary-900: 17 24 39;
+    --theme-primary-50: #f9fafb;
+    --theme-primary-100: #f3f4f6;
+    --theme-primary-200: #e5e7eb;
+    --theme-primary-300: #d1d5db;
+    --theme-primary-400: #9ca3af;
+    --theme-primary-500: #6b7280;
+    --theme-primary-600: #4b5563;
+    --theme-primary-700: #374151;
+    --theme-primary-800: #1f2937;
+    --theme-primary-900: #111827;
 
-    --color-accent-50: 255 251 235;
-    --color-accent-100: 254 243 199;
-    --color-accent-200: 253 230 138;
-    --color-accent-300: 252 211 77;
-    --color-accent-400: 251 191 36;
-    --color-accent-500: 245 158 11;
-    --color-accent-600: 217 119 6;
-    --color-accent-700: 180 83 9;
-    --color-accent-800: 146 64 14;
-    --color-accent-900: 120 53 15;
+    --theme-accent-50: #fffbeb;
+    --theme-accent-100: #fef3c7;
+    --theme-accent-200: #fde68a;
+    --theme-accent-300: #fcd34d;
+    --theme-accent-400: #fbbf24;
+    --theme-accent-500: #f59e0b;
+    --theme-accent-600: #d97706;
+    --theme-accent-700: #b45309;
+    --theme-accent-800: #92400e;
+    --theme-accent-900: #78350f;
   }
 
   :root[data-theme="green"] {
     /* Green/Teal Growth Theme */
-    --color-primary-50: 236 253 245;
-    --color-primary-100: 209 250 229;
-    --color-primary-200: 167 243 208;
-    --color-primary-300: 110 231 183;
-    --color-primary-400: 52 211 153;
-    --color-primary-500: 16 185 129;
-    --color-primary-600: 5 150 105;
-    --color-primary-700: 4 120 87;
-    --color-primary-800: 6 95 70;
-    --color-primary-900: 6 78 59;
+    --theme-primary-50: #ecfdf5;
+    --theme-primary-100: #d1fae5;
+    --theme-primary-200: #a7f3d0;
+    --theme-primary-300: #6ee7b7;
+    --theme-primary-400: #34d399;
+    --theme-primary-500: #10b981;
+    --theme-primary-600: #059669;
+    --theme-primary-700: #047857;
+    --theme-primary-800: #065f46;
+    --theme-primary-900: #064e3b;
 
-    --color-accent-50: 240 253 250;
-    --color-accent-100: 204 251 241;
-    --color-accent-200: 153 246 228;
-    --color-accent-300: 94 234 212;
-    --color-accent-400: 45 212 191;
-    --color-accent-500: 20 184 166;
-    --color-accent-600: 13 148 136;
-    --color-accent-700: 15 118 110;
-    --color-accent-800: 17 94 89;
-    --color-accent-900: 19 78 74;
+    --theme-accent-50: #f0fdfa;
+    --theme-accent-100: #ccfbf1;
+    --theme-accent-200: #99f6e4;
+    --theme-accent-300: #5eead4;
+    --theme-accent-400: #2dd4bf;
+    --theme-accent-500: #14b8a6;
+    --theme-accent-600: #0d9488;
+    --theme-accent-700: #0f766e;
+    --theme-accent-800: #115e59;
+    --theme-accent-900: #134e4a;
   }
 
   /* Dark mode adjustments */
@@ -119,4 +150,14 @@
   body {
     @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100;
   }
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes slideUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
 }

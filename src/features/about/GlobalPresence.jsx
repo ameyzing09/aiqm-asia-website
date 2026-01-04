@@ -1,19 +1,7 @@
+import { useCountries } from '../../hooks/firebase'
+
 export function GlobalPresence() {
-  const countries = [
-    { name: 'India', flag: '🇮🇳' },
-    { name: 'United States', flag: '🇺🇸' },
-    { name: 'United Kingdom', flag: '🇬🇧' },
-    { name: 'Singapore', flag: '🇸🇬' },
-    { name: 'UAE', flag: '🇦🇪' },
-    { name: 'Saudi Arabia', flag: '🇸🇦' },
-    { name: 'Malaysia', flag: '🇲🇾' },
-    { name: 'Thailand', flag: '🇹🇭' },
-    { name: 'Australia', flag: '🇦🇺' },
-    { name: 'Canada', flag: '🇨🇦' },
-    { name: 'Germany', flag: '🇩🇪' },
-    { name: 'South Africa', flag: '🇿🇦' },
-    { name: 'Philippines', flag: '🇵🇭' }
-  ]
+  const { data: countries, isLoading } = useCountries()
 
   return (
     <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
@@ -49,17 +37,26 @@ export function GlobalPresence() {
 
         {/* Countries List */}
         <div className="flex flex-wrap justify-center gap-4">
-          {countries.map((country) => (
-            <div
-              key={country.name}
-              className="flex items-center gap-3 bg-white dark:bg-gray-800 rounded-xl px-6 py-4 shadow-md hover:shadow-xl transition-shadow duration-300"
-            >
-              <span className="text-3xl">{country.flag}</span>
-              <span className="text-base font-medium text-gray-900 dark:text-white">
-                {country.name}
-              </span>
-            </div>
-          ))}
+          {isLoading ? (
+            [1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="flex items-center gap-3 bg-white dark:bg-gray-800 rounded-xl px-6 py-4 shadow-md animate-pulse">
+                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded" />
+                <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded" />
+              </div>
+            ))
+          ) : (
+            countries?.map((country) => (
+              <div
+                key={country.id}
+                className="flex items-center gap-3 bg-white dark:bg-gray-800 rounded-xl px-6 py-4 shadow-md hover:shadow-xl transition-shadow duration-300"
+              >
+                <span className="text-3xl">{country.flag}</span>
+                <span className="text-base font-medium text-gray-900 dark:text-white">
+                  {country.name}
+                </span>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Stats Banner */}
