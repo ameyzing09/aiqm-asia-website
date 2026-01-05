@@ -4,7 +4,8 @@ import { auth, googleProvider } from '../services/firebase'
 
 const ADMIN_WHITELIST = [
   'ameykode2001@gmail.com',
-  'dskode2007@aiqmindia.com'
+  'dskode@aiqmindia.com',
+  'aniket@aiqmindia.com'
 ]
 
 export const AuthContext = createContext(null)
