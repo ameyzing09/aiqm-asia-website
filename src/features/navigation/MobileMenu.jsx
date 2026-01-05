@@ -1,13 +1,12 @@
 import { Link } from 'react-router-dom'
-import { NAV_LINKS } from '../../constants/navigation'
 import { Button } from '../../components/Button'
 
-export function MobileMenu({ isOpen, onClose }) {
+export function MobileMenu({ isOpen, onClose, navLinks = [], ctaButtonText = 'Enroll Now' }) {
   if (!isOpen) return null
 
   return (
     <div className="lg:hidden py-4 border-t border-gray-200 dark:border-gray-800">
-      {NAV_LINKS.map((link) => {
+      {navLinks.map((link) => {
         const isRoute = link.href.startsWith('/')
         return isRoute ? (
           <Link
@@ -36,7 +35,7 @@ export function MobileMenu({ isOpen, onClose }) {
         onClick={onClose}
         className="w-full mt-4"
       >
-        Enroll Now
+        {ctaButtonText}
       </Button>
     </div>
   )

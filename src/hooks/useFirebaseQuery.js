@@ -10,7 +10,8 @@ import { db } from '../services/firebase'
  * @returns {UseQueryResult} - TanStack Query result object
  */
 export function useFirebaseQuery(queryKey, select) {
-  const path = queryKey[0]
+  // Join all queryKey parts to form the full path (e.g., ['heroes', 'home'] => 'heroes/home')
+  const path = queryKey.join('/')
 
   return useQuery({
     queryKey,

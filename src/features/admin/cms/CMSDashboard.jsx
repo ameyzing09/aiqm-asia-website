@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { SyncValidator } from './components/SyncValidator'
 
 const quickActions = [
   {
@@ -71,6 +72,9 @@ export function CMSDashboard() {
           All changes are saved to Firebase and reflect instantly on the live site.
         </p>
       </div>
+
+      {/* Data Sync Validator */}
+      <SyncValidator />
 
       {/* Quick Actions Grid */}
       <div>

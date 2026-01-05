@@ -1,4 +1,4 @@
-import { useCourses } from '../../hooks/firebase'
+import { useCourses, useSectionHeaders } from '../../hooks/firebase'
 import { CourseCard } from './CourseCard'
 
 // Loading skeleton for featured course card
@@ -23,6 +23,7 @@ function FeaturedCourseSkeleton() {
 
 export function FeaturedCourses() {
   const { data: allCourses, isLoading } = useCourses()
+  const { data: sectionHeader } = useSectionHeaders('featuredCourses')
 
   // Filter to only featured courses, or take first 3 if no featured flag
   const featuredCourses = allCourses?.filter(course => course.featured).slice(0, 3)
@@ -34,10 +35,10 @@ export function FeaturedCourses() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Featured Certification Programs
+            {sectionHeader?.title || 'Featured Certification Programs'}
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Industry-recognized certifications designed to transform your career
+            {sectionHeader?.description || 'Industry-recognized certifications designed to transform your career'}
           </p>
         </div>
 

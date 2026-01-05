@@ -22,15 +22,25 @@ export const useCaseStudies = () => {
       const outcomesData = results[1].status === 'fulfilled' && results[1].value.exists()
         ? results[1].value.val() : {}
 
+      // DEFENSIVE: Handle both array and object formats from Firebase
+      const studiesItems = Array.isArray(studiesData)
+        ? studiesData.map((item, index) => ({
+            id: item.id || `case-${index}`,
+            ...item
+          }))
+        : Object.entries(studiesData).map(([id, item]) => ({ id, ...item }))
+
       // Transform and merge
-      return Object.entries(studiesData)
-        .map(([id, item]) => {
-          // Get outcomes for this case study and convert to array
-          const studyOutcomes = outcomesData[id] || {}
-          const outcomes = Object.values(studyOutcomes)
+      return studiesItems
+        .map((item) => {
+          // DEFENSIVE: Get outcomes for this case study with Array.isArray check
+          const studyOutcomes = outcomesData[item.id] || {}
+          const outcomes = Array.isArray(studyOutcomes)
+            ? studyOutcomes
+            : Object.values(studyOutcomes)
 
           return {
-            id,
+            id: item.id,
             industry: item.industry || '',
             companySize: item.companySize || '',
             challenge: item.challenge || '',
@@ -38,7 +48,8 @@ export const useCaseStudies = () => {
             timeline: item.timeline || '',
             teamSize: item.teamSize || '',
             colorTheme: item.colorTheme || 'blue',
-            order: item.order || 0,
+            image: item.image || '',
+            order: item.order ?? 999,
             outcomes
           }
         })

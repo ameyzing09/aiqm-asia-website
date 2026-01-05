@@ -4,7 +4,6 @@ export const NAV_LINKS = [
   { name: 'Certifications', href: '/certifications' },
   { name: 'Consultancy', href: '/consultancy' },
   { name: 'About', href: '/about' },
-  { name: 'Contact', href: '#contact' },
 ]
 
 export const SOCIAL_LINKS = [

@@ -7,6 +7,7 @@ const siteContentData = {
     companyInfo: {
       name: "AIQM India",
       tagline: "India's Leading Institute for Lean Six Sigma & Quality Excellence",
+      shortTagline: "Quality Excellence",
       description: "Leading provider of Lean Six Sigma and Quality Excellence training across India and beyond.",
       establishedYear: 1998,
       copyrightYear: 2025
@@ -56,14 +57,16 @@ const siteContentData = {
     about: {
       title: "About AIQM India",
       description: "India's most trusted partner in quality excellence",
-      establishedBadge: "Est. 1998"
+      establishedBadge: "Est. 1998",
+      heroImage: ""
     },
     certifications: {
       title: "Globally Recognized Certifications",
       badge: "Internationally Accredited"
     },
     consultancy: {
-      title: "Driving Business Excellence Through Consultancy"
+      title: "Driving Business Excellence Through Consultancy",
+      heroImage: ""
     }
   },
 
@@ -276,6 +279,8 @@ const siteContentData = {
       p2: "What started as a small training center in Mumbai has grown into India's most trusted partner in quality excellence, serving organizations across 13 countries and training over 95,000 professionals.",
       p3: "Our journey has been marked by continuous innovation, unwavering commitment to excellence, and a deep understanding of the unique challenges faced by Indian organizations in their quest for operational excellence."
     },
+    storyImage: "",
+    globalMapImage: "",
     keyFacts: {
       alumni: { title: "IIT & IIM Alumni", description: "Founded by graduates from India's premier institutes", order: 1 },
       years: { title: "25+ Years", description: "Over two decades of continuous excellence", order: 2 },
@@ -299,8 +304,7 @@ const siteContentData = {
       p1: "Expand our global footprint to 25+ countries by 2030",
       p2: "Pioneer AI-driven quality management methodologies",
       p3: "Create sustainable impact through green belt and beyond initiatives"
-    },
-    directorsMessage: "At AIQM, our mission is to empower professionals and organizations with the tools of excellence. Over the past three decades, I've had the privilege of mentoring 4,300+ Lean Six Sigma projects and training more than 40,000 professionals worldwide. Our approach blends academic rigor with practical impact — ensuring every participant leaves with skills that transform careers and businesses."
+    }
   },
 
   leadership: {
@@ -314,9 +318,10 @@ const siteContentData = {
       photoUrl: ""
     },
     directorImpact: {
-      i1: "Mentored 4,300+ Lean Six Sigma projects",
-      i2: "Trained 40,000+ professionals across 13 countries"
-    }
+      i1: { text: "Mentored 4,300+ Lean Six Sigma projects", order: 1 },
+      i2: { text: "Trained 40,000+ professionals across 13 countries", order: 2 }
+    },
+    directorsMessage: "At AIQM, our mission is to empower professionals and organizations with the tools of excellence. Over the past three decades, I've had the privilege of mentoring 4,300+ Lean Six Sigma projects and training more than 40,000 professionals worldwide. Our approach blends academic rigor with practical impact — ensuring every participant leaves with skills that transform careers and businesses."
   },
 
   faculty: {
@@ -435,24 +440,28 @@ const siteContentData = {
       title: "Process Improvement",
       description: "Streamline your operations and eliminate waste through Lean Six Sigma methodologies.",
       colorTheme: "blue",
+      image: "",
       order: 1
     },
     "business-excellence": {
       title: "Business Excellence",
       description: "Achieve world-class quality standards with ISO certifications and excellence frameworks.",
       colorTheme: "green",
+      image: "",
       order: 2
     },
     auditing: {
       title: "Auditing",
       description: "Comprehensive internal and external audits to ensure compliance and identify improvement areas.",
       colorTheme: "purple",
+      image: "",
       order: 3
     },
     "project-mentoring": {
       title: "Project Mentoring",
       description: "Expert guidance and hands-on support for successful project implementation and completion.",
       colorTheme: "orange",
+      image: "",
       order: 4
     }
   },
@@ -506,6 +515,7 @@ const siteContentData = {
       timeline: "6 months",
       teamSize: "8 consultants",
       colorTheme: "blue",
+      image: "",
       order: 1
     },
     "logistics-case": {
@@ -516,6 +526,7 @@ const siteContentData = {
       timeline: "4 months",
       teamSize: "6 consultants",
       colorTheme: "green",
+      image: "",
       order: 2
     },
     "healthcare-case": {
@@ -526,6 +537,7 @@ const siteContentData = {
       timeline: "8 months",
       teamSize: "10 consultants",
       colorTheme: "purple",
+      image: "",
       order: 3
     }
   },

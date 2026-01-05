@@ -1,5 +1,5 @@
 import { Card } from '../../components/Card'
-import { useServices } from '../../hooks/firebase'
+import { useServices, useSectionHeaders } from '../../hooks/firebase'
 
 // Icon and style mapping for services (JSX can't be stored in Firebase)
 const serviceStyles = {
@@ -99,16 +99,17 @@ const defaultStyle = {
 
 export function ServicesGrid() {
   const { data: services, isLoading } = useServices()
+  const { data: sectionHeader } = useSectionHeaders('services')
 
   return (
     <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-800">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Our Consultancy Services
+            {sectionHeader?.title || 'Our Consultancy Services'}
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Comprehensive consulting solutions tailored to your business needs, delivered by industry experts
+            {sectionHeader?.description || 'Comprehensive consulting solutions tailored to your business needs, delivered by industry experts'}
           </p>
         </div>
 
@@ -144,9 +145,19 @@ export function ServicesGrid() {
               const style = serviceStyles[service.id] || defaultStyle
               return (
                 <Card key={service.id} hover className="flex flex-col h-full w-full md:w-[calc(50%-1rem)]">
-                  {/* Image Placeholder */}
+                  {/* Service Image */}
                   <div className="mb-6">
-                    {style.imagePlaceholder}
+                    {service.image ? (
+                      <div className="aspect-video rounded-t-xl overflow-hidden">
+                        <img
+                          src={service.image}
+                          alt={service.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      style.imagePlaceholder
+                    )}
                   </div>
 
                   {/* Content Wrapper with Padding */}
