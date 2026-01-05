@@ -16,6 +16,7 @@ import { TestimonialsEditor } from './features/admin/cms/editors/TestimonialsEdi
 import { AboutEditor } from './features/admin/cms/editors/AboutEditor'
 import { LeadershipEditor } from './features/admin/cms/editors/LeadershipEditor'
 import { ConsultancyEditor } from './features/admin/cms/editors/ConsultancyEditor'
+import { GlobalEditor } from './features/admin/cms/editors/GlobalEditor'
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
           <Route path="about" element={<AboutEditor />} />
           <Route path="leadership" element={<LeadershipEditor />} />
           <Route path="consultancy" element={<ConsultancyEditor />} />
+          <Route path="global" element={<GlobalEditor />} />
         </Route>
       </Routes>
     </AuthProvider>

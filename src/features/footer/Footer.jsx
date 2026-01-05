@@ -71,24 +71,24 @@ export function Footer() {
     { name: navLabels.about || 'About Us', href: '/about' },
   ]
 
-  // Fallback values while loading or if no data
+  // Get values from Firebase (no hardcoded fallbacks)
   const companyInfo = global?.companyInfo || {
-    name: 'AIQM India',
-    description: 'Leading provider of Lean Six Sigma and Quality Excellence training across India and beyond.',
+    name: '',
+    description: '',
     copyrightYear: new Date().getFullYear(),
   }
 
   const contact = global?.contact || {
-    email: 'info@aiqmindia.com',
-    phone: '+91 (800) 123-4567',
-    address: 'Mumbai, Maharashtra, India',
+    email: '',
+    phone: '',
+    address: '',
   }
 
   const socialLinks = global?.socialLinks || []
 
   const accreditations = global?.accreditations
     ? Object.values(global.accreditations)
-    : ['ISO 9001', 'IASSC', 'ASQ', 'CSSC']
+    : []
 
   return (
     <footer id="contact" className="bg-gray-900 dark:bg-black text-white py-12 px-4 sm:px-6 lg:px-8">
