@@ -1,19 +1,23 @@
 import { useCarousel } from '../../hooks/useCarousel'
-import { useTestimonials } from '../../hooks/firebase'
+import { useTestimonials, useSectionHeaders } from '../../hooks/firebase'
 import { CarouselControls } from './CarouselControls'
 
 export function Testimonials() {
   const { data: testimonials, isLoading } = useTestimonials()
+  const { data: sectionHeader } = useSectionHeaders('testimonials')
   const { currentIndex, goToNext, goToPrevious, goToIndex } = useCarousel(testimonials?.length || 1, 5000)
 
   const currentTestimonial = testimonials?.[currentIndex]
+
+  // Section header with fallbacks
+  const headerTitle = sectionHeader?.title || 'What Our Students Say'
 
   return (
     <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-800">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            What Our Students Say
+            {headerTitle}
           </h2>
         </div>
 

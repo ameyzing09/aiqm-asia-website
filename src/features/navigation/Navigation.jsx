@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { NAV_LINKS } from '../../constants/navigation'
+import { useQueryClient } from '@tanstack/react-query'
+import { useGlobal } from '../../hooks/firebase'
 import { useTheme } from '../../hooks/useTheme'
 import { Button } from '../../components/Button'
 import { ThemeSwitcher } from './ThemeSwitcher'
@@ -10,6 +11,34 @@ export function Navigation() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { darkMode, toggleDarkMode } = useTheme()
+  const { data: global } = useGlobal()
+  const queryClient = useQueryClient()
+
+  // DEV: Press Ctrl+Shift+R to refresh all Firebase data
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'R') {
+        e.preventDefault()
+        queryClient.invalidateQueries()
+        console.log('Cache invalidated - refetching all data...')
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [queryClient])
+
+  // Build nav links from Firebase or use defaults
+  const navLabels = global?.navigationLabels || {}
+  const NAV_LINKS = [
+    { name: navLabels.home || 'Home', href: '/' },
+    { name: navLabels.courses || 'Courses', href: '/courses' },
+    { name: navLabels.certifications || 'Certifications', href: '/certifications' },
+    { name: navLabels.consultancy || 'Consultancy', href: '/consultancy' },
+    { name: navLabels.about || 'About', href: '/about' },
+  ]
+  const ctaButtonText = navLabels.ctaButton || 'Enroll Now'
+  const companyName = global?.companyInfo?.name || ''
+  const companyTagline = global?.companyInfo?.shortTagline || ''
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,8 +63,8 @@ export function Navigation() {
                 <span className="text-white font-bold text-xl">AI</span>
               </div>
               <div className="flex flex-col">
-                <span className="font-bold text-xl text-gray-900 dark:text-white">AIQM India</span>
-                <span className="text-xs text-gray-600 dark:text-gray-400">Quality Excellence</span>
+                <span className="font-bold text-xl text-gray-900 dark:text-white">{companyName}</span>
+                <span className="text-xs text-gray-600 dark:text-gray-400">{companyTagline}</span>
               </div>
             </Link>
           </div>
@@ -92,7 +121,7 @@ export function Navigation() {
 
             {/* Enroll Now Button */}
             <Button href="#enroll" variant="accent" size="md" className="hidden md:block">
-              Enroll Now
+              {ctaButtonText}
             </Button>
 
             {/* Mobile menu button */}
@@ -114,7 +143,12 @@ export function Navigation() {
         </div>
 
         {/* Mobile Menu */}
-        <MobileMenu isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+        <MobileMenu
+          isOpen={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
+          navLinks={NAV_LINKS}
+          ctaButtonText={ctaButtonText}
+        />
       </div>
     </nav>
   )

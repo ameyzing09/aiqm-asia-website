@@ -7,7 +7,16 @@ import { AboutPage } from './pages/AboutPage'
 import { AuthProvider } from './context/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { LoginPage } from './features/auth/LoginPage'
-import { AdminPage } from './features/admin/AdminPage'
+import { CMSLayout } from './features/admin/cms/CMSLayout'
+import { CMSDashboard } from './features/admin/cms/CMSDashboard'
+import { HeroEditor } from './features/admin/cms/editors/HeroEditor'
+import { StatsEditor } from './features/admin/cms/editors/StatsEditor'
+import { CoursesEditor } from './features/admin/cms/editors/CoursesEditor'
+import { TestimonialsEditor } from './features/admin/cms/editors/TestimonialsEditor'
+import { AboutEditor } from './features/admin/cms/editors/AboutEditor'
+import { LeadershipEditor } from './features/admin/cms/editors/LeadershipEditor'
+import { ConsultancyEditor } from './features/admin/cms/editors/ConsultancyEditor'
+import { GlobalEditor } from './features/admin/cms/editors/GlobalEditor'
 
 function App() {
   return (
@@ -23,10 +32,20 @@ function App() {
           path="/admin"
           element={
             <ProtectedRoute>
-              <AdminPage />
+              <CMSLayout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<CMSDashboard />} />
+          <Route path="hero" element={<HeroEditor />} />
+          <Route path="stats" element={<StatsEditor />} />
+          <Route path="courses" element={<CoursesEditor />} />
+          <Route path="testimonials" element={<TestimonialsEditor />} />
+          <Route path="about" element={<AboutEditor />} />
+          <Route path="leadership" element={<LeadershipEditor />} />
+          <Route path="consultancy" element={<ConsultancyEditor />} />
+          <Route path="global" element={<GlobalEditor />} />
+        </Route>
       </Routes>
     </AuthProvider>
   )

@@ -1,5 +1,5 @@
 import { Card } from '../../components/Card'
-import { useCaseStudies } from '../../hooks/firebase'
+import { useCaseStudies, useSectionHeaders } from '../../hooks/firebase'
 
 // Image placeholder mapping (JSX can't be stored in Firebase)
 const caseStudyStyles = {
@@ -78,16 +78,17 @@ const defaultStyle = {
 
 export function CaseStudies() {
   const { data: caseStudies, isLoading } = useCaseStudies()
+  const { data: sectionHeader } = useSectionHeaders('caseStudies')
 
   return (
     <section id="case-studies" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Proven Results Across Industries
+            {sectionHeader?.title || 'Proven Results Across Industries'}
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Real case studies demonstrating measurable impact and sustainable improvements
+            {sectionHeader?.description || 'Real case studies demonstrating measurable impact and sustainable improvements'}
           </p>
         </div>
 
@@ -143,7 +144,17 @@ export function CaseStudies() {
                   <div className="flex flex-col lg:flex-row gap-8 p-6 lg:p-8">
                     {/* Image Section */}
                     <div className="flex-1 order-1 lg:order-1">
-                      {style.imagePlaceholder}
+                      {study.image ? (
+                        <div className="aspect-video rounded-lg overflow-hidden">
+                          <img
+                            src={study.image}
+                            alt={`${study.industry} Case Study`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        style.imagePlaceholder
+                      )}
 
                       {/* Project Details */}
                       <div className="mt-4 flex flex-wrap gap-4">

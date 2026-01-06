@@ -1,55 +1,63 @@
 import { Card } from '../../components/Card'
-import { useLeadership } from '../../hooks/firebase'
+import { useLeadership, useSectionHeaders } from '../../hooks/firebase'
 
 export function Leadership() {
   const { data, isLoading } = useLeadership()
+  const { data: sectionHeader } = useSectionHeaders('leadership')
+
   const director = data?.director || {}
   const directorImpact = data?.directorImpact || []
   const directorsMessage = data?.directorsMessage || ''
   const faculty = data?.faculty || []
+
+  // Section header with fallbacks
+  const headerTitle = sectionHeader?.title || 'Leadership & Faculty'
+  const headerDescription = sectionHeader?.description || 'Led by distinguished professionals from premier institutes, our team brings decades of combined experience in quality excellence'
 
   return (
     <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-800">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Leadership & Faculty
+            {headerTitle}
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Led by distinguished professionals from premier institutes, our team brings decades of combined experience in quality excellence
+            {headerDescription}
           </p>
         </div>
 
-        {/* Director's Message */}
-        <div className="mb-16 bg-gradient-to-br from-primary-50 to-accent-50 dark:from-gray-900 dark:to-gray-800 rounded-2xl p-8 lg:p-12 border border-primary-100 dark:border-gray-700">
-          {isLoading ? (
-            <div className="animate-pulse min-h-[180px]">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded flex-shrink-0" />
-                <div className="flex-1">
-                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-4" />
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2" />
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2" />
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2" />
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2" />
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+        {/* Director's Message - only show if message exists */}
+        {(isLoading || directorsMessage) && (
+          <div className="mb-16 bg-gradient-to-br from-primary-50 to-accent-50 dark:from-gray-900 dark:to-gray-800 rounded-2xl p-8 lg:p-12 border border-primary-100 dark:border-gray-700">
+            {isLoading ? (
+              <div className="animate-pulse min-h-[180px]">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded flex-shrink-0" />
+                  <div className="flex-1">
+                    <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-4" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            <div className="flex items-start gap-4 mb-6">
-              <svg className="w-12 h-12 text-primary-600 dark:text-primary-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
-              </svg>
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Director&apos;s Message</h3>
-                <blockquote className="text-base lg:text-lg text-gray-700 dark:text-gray-300 leading-relaxed italic">
-                  &quot;{directorsMessage}&quot;
-                </blockquote>
+            ) : (
+              <div className="flex items-start gap-4 mb-6">
+                <svg className="w-12 h-12 text-primary-600 dark:text-primary-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Director&apos;s Message</h3>
+                  <blockquote className="text-base lg:text-lg text-gray-700 dark:text-gray-300 leading-relaxed italic">
+                    {directorsMessage}
+                  </blockquote>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* Director Profile - Featured */}
         <div className="mb-12">
@@ -156,7 +164,7 @@ export function Leadership() {
                             <svg className="w-5 h-5 text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                             </svg>
-                            <span className="text-base text-gray-700 dark:text-gray-300">{impact}</span>
+                            <span className="text-base text-gray-700 dark:text-gray-300">{impact.text}</span>
                           </div>
                         ))}
                       </div>

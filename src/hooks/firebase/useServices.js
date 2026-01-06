@@ -22,19 +22,30 @@ export const useServices = () => {
       const deliverablesData = results[1].status === 'fulfilled' && results[1].value.exists()
         ? results[1].value.val() : {}
 
+      // DEFENSIVE: Handle both array and object formats from Firebase
+      const servicesItems = Array.isArray(servicesData)
+        ? servicesData.map((item, index) => ({
+            id: item.id || `service-${index}`,
+            ...item
+          }))
+        : Object.entries(servicesData).map(([id, item]) => ({ id, ...item }))
+
       // Transform and merge
-      return Object.entries(servicesData)
-        .map(([id, item]) => {
-          // Get deliverables for this service and convert to array
-          const serviceDeliverables = deliverablesData[id] || {}
-          const deliverables = Object.values(serviceDeliverables)
+      return servicesItems
+        .map((item) => {
+          // DEFENSIVE: Get deliverables for this service with Array.isArray check
+          const serviceDeliverables = deliverablesData[item.id] || {}
+          const deliverables = Array.isArray(serviceDeliverables)
+            ? serviceDeliverables
+            : Object.values(serviceDeliverables)
 
           return {
-            id,
+            id: item.id,
             title: item.title || '',
             description: item.description || '',
             colorTheme: item.colorTheme || 'blue',
-            order: item.order || 0,
+            image: item.image || '',
+            order: item.order ?? 999,
             deliverables
           }
         })

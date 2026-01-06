@@ -1,5 +1,5 @@
 import { Card } from '../../components/Card'
-import { useIndustries } from '../../hooks/firebase'
+import { useIndustries, useSectionHeaders } from '../../hooks/firebase'
 
 // Icon mapping for industries (icons can't be stored in Firebase)
 const industryIcons = {
@@ -72,16 +72,17 @@ const defaultIcon = {
 
 export function IndustriesServed() {
   const { data: industries, isLoading } = useIndustries()
+  const { data: sectionHeader } = useSectionHeaders('industries')
 
   return (
     <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-800">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Industries We Serve
+            {sectionHeader?.title || 'Industries We Serve'}
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Delivering excellence across diverse sectors with industry-specific expertise
+            {sectionHeader?.description || 'Delivering excellence across diverse sectors with industry-specific expertise'}
           </p>
         </div>
 

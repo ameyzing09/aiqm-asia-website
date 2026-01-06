@@ -24,16 +24,26 @@ export const useCourses = () => {
         ? results[1].value.val() : {}
 
       // If no courses in Firebase, return hardcoded fallback
-      if (!coursesData || Object.keys(coursesData).length === 0) {
+      if (!coursesData || (typeof coursesData === 'object' && Object.keys(coursesData).length === 0)) {
         return ALL_COURSES
       }
 
+      // DEFENSIVE: Handle both array and object formats from Firebase
+      const coursesItems = Array.isArray(coursesData)
+        ? coursesData.map((item, index) => ({
+            id: item.id || `course-${index}`,
+            ...item
+          }))
+        : Object.entries(coursesData).map(([id, item]) => ({ id, ...item }))
+
       // Transform and merge Firebase data
-      const courses = Object.entries(coursesData)
-        .map(([id, course]) => {
-          // Get topics for this course and convert to array
-          const courseTopics = topicsData[id] || {}
-          const topics = Object.values(courseTopics)
+      const courses = coursesItems
+        .map((course) => {
+          // DEFENSIVE: Get topics for this course with Array.isArray check
+          const courseTopics = topicsData[course.id] || {}
+          const topics = Array.isArray(courseTopics)
+            ? courseTopics
+            : Object.values(courseTopics)
 
           // Transform mode object to array format matching hardcoded structure
           const modeArray = []
@@ -47,7 +57,7 @@ export const useCourses = () => {
           if (course.accreditation?.iaf) accreditationArray.push('IAF')
 
           return {
-            id,
+            id: course.id,
             title: course.title || '',
             level: course.level || '',
             duration: course.duration || '',
@@ -59,8 +69,8 @@ export const useCourses = () => {
             description: course.description || '',
             topics: topics.length > 0 ? topics : [],
             price: course.priceDisplay || '',
-            order: course.order || 0,
-            featured: course.featured || false,
+            order: course.order ?? 999,
+            featured: course.featured ?? false,
             active: course.active !== false // Default to true if not specified
           }
         })
