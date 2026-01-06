@@ -3,6 +3,7 @@ import { useCMSData } from '../hooks/useCMSData'
 import { ValidatedInput } from '../components/ValidatedInput'
 import { FormCard } from '../components/FormCard'
 import { SaveBar } from '../components/SaveBar'
+import { useToast, getErrorMessage } from '../hooks/useToast'
 
 // Character limits for stats
 const CHAR_LIMITS = {
@@ -13,6 +14,7 @@ const CHAR_LIMITS = {
 
 export function StatsEditor() {
   const { data, isLoading, save, isSaving } = useCMSData('stats')
+  const { success, error } = useToast()
   const [formData, setFormData] = useState({})
   const [initialData, setInitialData] = useState({})
 
@@ -55,8 +57,10 @@ export function StatsEditor() {
     try {
       await save(formData)
       setInitialData(formData)
-    } catch (error) {
-      console.error('Failed to save stats:', error)
+      success('Statistics saved successfully!')
+    } catch (err) {
+      error(getErrorMessage(err))
+      console.error('Failed to save stats:', err)
     }
   }
 

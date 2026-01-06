@@ -9,6 +9,7 @@ import { FormCard } from '../components/FormCard'
 import { SaveBar } from '../components/SaveBar'
 import { MediaUploader } from '../components/MediaUploader'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useToast, getErrorMessage } from '../hooks/useToast'
 
 // Character limits
 const CHAR_LIMITS = {
@@ -36,6 +37,7 @@ const DEFAULT_DIRECTOR = {
 
 export function LeadershipEditor() {
   const queryClient = useQueryClient()
+  const { success, error } = useToast()
   const [activeTab, setActiveTab] = useState('director')
   const [formData, setFormData] = useState({
     director: DEFAULT_DIRECTOR,
@@ -266,8 +268,10 @@ export function LeadershipEditor() {
     try {
       await saveMutation.mutateAsync(formData)
       setInitialData(formData)
-    } catch (error) {
-      console.error('Failed to save leadership data:', error)
+      success('Leadership data saved successfully!')
+    } catch (err) {
+      error(getErrorMessage(err))
+      console.error('Failed to save leadership data:', err)
     }
   }
 

@@ -7,6 +7,7 @@ import { ValidatedTextarea } from '../components/ValidatedTextarea'
 import { FormCard } from '../components/FormCard'
 import { SaveBar } from '../components/SaveBar'
 import { MediaUploader } from '../components/MediaUploader'
+import { useToast, getErrorMessage } from '../hooks/useToast'
 
 // Character limits for hero sections
 const CHAR_LIMITS = {
@@ -71,6 +72,7 @@ const DEFAULT_CONTENT = {
 
 export function HeroEditor() {
   const queryClient = useQueryClient()
+  const { success, error } = useToast()
   const [activePage, setActivePage] = useState('home')
   const [formData, setFormData] = useState({})
   const [initialData, setInitialData] = useState({})
@@ -135,8 +137,10 @@ export function HeroEditor() {
     try {
       await saveMutation.mutateAsync(formData)
       setInitialData(formData)
-    } catch (error) {
-      console.error('Failed to save hero:', error)
+      success('Hero section saved successfully!')
+    } catch (err) {
+      error(getErrorMessage(err))
+      console.error('Failed to save hero:', err)
     }
   }
 

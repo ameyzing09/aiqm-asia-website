@@ -7,6 +7,7 @@ import { ValidatedTextarea } from '../components/ValidatedTextarea'
 import { FormCard } from '../components/FormCard'
 import { SaveBar } from '../components/SaveBar'
 import { MediaUploader } from '../components/MediaUploader'
+import { useToast, getErrorMessage } from '../hooks/useToast'
 
 // Character limits for about page content
 const CHAR_LIMITS = {
@@ -58,6 +59,7 @@ const DEFAULT_CONTENT = {
 
 export function AboutEditor() {
   const queryClient = useQueryClient()
+  const { success, error } = useToast()
   const [activeTab, setActiveTab] = useState('story')
   const [formData, setFormData] = useState(DEFAULT_CONTENT)
   const [initialData, setInitialData] = useState(DEFAULT_CONTENT)
@@ -150,8 +152,10 @@ export function AboutEditor() {
     try {
       await saveMutation.mutateAsync(formData)
       setInitialData(formData)
-    } catch (error) {
-      console.error('Failed to save about content:', error)
+      success('About page saved successfully!')
+    } catch (err) {
+      error(getErrorMessage(err))
+      console.error('Failed to save about content:', err)
     }
   }
 

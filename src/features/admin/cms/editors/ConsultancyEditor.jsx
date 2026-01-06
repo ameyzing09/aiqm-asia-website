@@ -8,6 +8,7 @@ import { FormCard } from '../components/FormCard'
 import { SaveBar } from '../components/SaveBar'
 import { MediaUploader } from '../components/MediaUploader'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useToast, getErrorMessage } from '../hooks/useToast'
 
 // Character limits
 const CHAR_LIMITS = {
@@ -24,6 +25,7 @@ const TABS = [
 
 export function ConsultancyEditor() {
   const queryClient = useQueryClient()
+  const { success, error } = useToast()
   const [activeTab, setActiveTab] = useState('services')
   const [formData, setFormData] = useState({
     services: {},
@@ -225,8 +227,10 @@ export function ConsultancyEditor() {
         await saveMutation.mutateAsync({ path: 'industries', data: formData.industries })
       }
       setInitialData(formData)
-    } catch (error) {
-      console.error('Failed to save:', error)
+      success('Consultancy data saved successfully!')
+    } catch (err) {
+      error(getErrorMessage(err))
+      console.error('Failed to save:', err)
     }
   }
 

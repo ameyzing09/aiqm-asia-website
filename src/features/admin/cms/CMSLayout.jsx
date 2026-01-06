@@ -1,13 +1,16 @@
 import { Outlet } from 'react-router-dom'
 import { useAuth } from '../../../hooks/useAuth'
 import { Sidebar } from './components/Sidebar'
+import { ToastProvider } from './context/ToastContext'
+import { ToastContainer } from './components/Toast'
 
 export function CMSLayout() {
   const { user, logout } = useAuth()
 
   return (
-    <div className="min-h-screen bg-gray-950 flex">
-      {/* Decorative gradient orbs */}
+    <ToastProvider>
+      <div className="min-h-screen bg-gray-950 flex">
+        {/* Decorative gradient orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary-600/10 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-accent-600/10 rounded-full blur-3xl" />
@@ -70,6 +73,10 @@ export function CMSLayout() {
           <Outlet />
         </div>
       </main>
+
+      {/* Toast Notifications */}
+      <ToastContainer />
     </div>
+    </ToastProvider>
   )
 }

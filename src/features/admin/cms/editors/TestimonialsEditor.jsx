@@ -7,6 +7,7 @@ import { ValidatedTextarea } from '../components/ValidatedTextarea'
 import { FormCard } from '../components/FormCard'
 import { SaveBar } from '../components/SaveBar'
 import { MediaUploader } from '../components/MediaUploader'
+import { useToast, getErrorMessage } from '../hooks/useToast'
 
 // Character limits for testimonials
 const CHAR_LIMITS = {
@@ -18,6 +19,7 @@ const CHAR_LIMITS = {
 
 export function TestimonialsEditor() {
   const queryClient = useQueryClient()
+  const { success, error } = useToast()
   const [formData, setFormData] = useState({})
   const [initialData, setInitialData] = useState({})
 
@@ -147,8 +149,10 @@ export function TestimonialsEditor() {
     try {
       await saveMutation.mutateAsync(formData)
       setInitialData(formData)
-    } catch (error) {
-      console.error('Failed to save testimonials:', error)
+      success('Testimonials saved successfully!')
+    } catch (err) {
+      error(getErrorMessage(err))
+      console.error('Failed to save testimonials:', err)
     }
   }
 

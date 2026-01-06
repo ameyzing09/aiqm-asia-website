@@ -7,6 +7,7 @@ import { ValidatedTextarea } from '../components/ValidatedTextarea'
 import { FormCard } from '../components/FormCard'
 import { SaveBar } from '../components/SaveBar'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useToast, getErrorMessage } from '../hooks/useToast'
 
 const TABS = [
   { id: 'company', label: 'Company Info', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
@@ -30,6 +31,7 @@ const CHAR_LIMITS = {
 
 export function GlobalEditor() {
   const queryClient = useQueryClient()
+  const { success, error } = useToast()
   const [activeTab, setActiveTab] = useState('company')
   const [formData, setFormData] = useState({
     companyInfo: {},
@@ -218,8 +220,10 @@ export function GlobalEditor() {
     try {
       await saveMutation.mutateAsync(formData)
       setInitialData(formData)
-    } catch (error) {
-      console.error('Failed to save:', error)
+      success('Global settings saved successfully!')
+    } catch (err) {
+      error(getErrorMessage(err))
+      console.error('Failed to save:', err)
     }
   }
 

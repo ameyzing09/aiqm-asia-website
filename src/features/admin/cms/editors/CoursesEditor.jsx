@@ -8,6 +8,7 @@ import { FormCard } from '../components/FormCard'
 import { SaveBar } from '../components/SaveBar'
 import { MediaUploader } from '../components/MediaUploader'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useToast, getErrorMessage } from '../hooks/useToast'
 
 // Character limits for courses
 const CHAR_LIMITS = {
@@ -21,6 +22,7 @@ const CHAR_LIMITS = {
 
 export function CoursesEditor() {
   const queryClient = useQueryClient()
+  const { success, error } = useToast()
   const [formData, setFormData] = useState({})
   const [initialData, setInitialData] = useState({})
   const [expandedCourses, setExpandedCourses] = useState({})
@@ -163,8 +165,10 @@ export function CoursesEditor() {
     try {
       await saveMutation.mutateAsync(formData)
       setInitialData(formData)
-    } catch (error) {
-      console.error('Failed to save courses:', error)
+      success('Courses saved successfully!')
+    } catch (err) {
+      error(getErrorMessage(err))
+      console.error('Failed to save courses:', err)
     }
   }
 
