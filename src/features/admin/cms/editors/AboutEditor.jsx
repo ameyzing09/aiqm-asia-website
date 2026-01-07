@@ -6,7 +6,8 @@ import { ValidatedInput } from '../components/ValidatedInput'
 import { ValidatedTextarea } from '../components/ValidatedTextarea'
 import { FormCard } from '../components/FormCard'
 import { SaveBar } from '../components/SaveBar'
-import { MediaUploader } from '../components/MediaUploader'
+import { ImageAssetCard } from '../components/ImageAssetCard'
+import { ProfileAssetCard } from '../components/ProfileAssetCard'
 import { useToast, getErrorMessage } from '../hooks/useToast'
 
 // Character limits for about page content
@@ -242,28 +243,31 @@ export function AboutEditor() {
             title="Story Section Header"
             description="Title and subtitle for the Our Story section"
           >
-            <div className="space-y-4">
+            <div className="grid grid-cols-12 gap-4">
               <ValidatedInput
+                wrapperClassName="col-span-12 lg:col-span-8"
                 label="Section Title"
                 value={formData.story?.title || ''}
                 onChange={(value) => updateField('story', 'title', value)}
                 maxLength={CHAR_LIMITS.sectionTitle}
                 placeholder="Our Story"
               />
+              <ValidatedInput
+                wrapperClassName="col-span-12 lg:col-span-4"
+                label="Founding Year"
+                value={formData.story?.foundingYear || ''}
+                onChange={(value) => updateField('story', 'foundingYear', value)}
+                maxLength={CHAR_LIMITS.foundingYear}
+                placeholder="1998"
+              />
               <ValidatedTextarea
+                wrapperClassName="col-span-12"
                 label="Section Subtitle"
                 value={formData.story?.subtitle || ''}
                 onChange={(value) => updateField('story', 'subtitle', value)}
                 maxLength={CHAR_LIMITS.sectionSubtitle}
                 placeholder="From humble beginnings to..."
                 rows={2}
-              />
-              <ValidatedInput
-                label="Founding Year"
-                value={formData.story?.foundingYear || ''}
-                onChange={(value) => updateField('story', 'foundingYear', value)}
-                maxLength={CHAR_LIMITS.foundingYear}
-                placeholder="1998"
               />
             </div>
           </FormCard>
@@ -273,20 +277,27 @@ export function AboutEditor() {
             title="Story Content"
             description="The main story paragraphs (displayed alongside the image)"
           >
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-12 gap-4">
               {/* Image */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Story Image</label>
-                <MediaUploader
+              <div className="col-span-12 lg:col-span-5">
+                <ImageAssetCard
                   value={formData.storyImage || ''}
-                  onUpload={(url) => setFormData(prev => ({ ...prev, storyImage: url }))}
+                  onChange={(url) => setFormData(prev => ({ ...prev, storyImage: url }))}
                   storagePath="about/story"
+                  label="Story Image"
+                  aspectRatio="aspect-[4/3]"
+                  maxSize="max-w-sm"
+                  placeholderIcon={
+                    <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  }
                 />
-                <p className="text-xs text-gray-500 mt-2">Recommended: Historical photo or office building (4:3 ratio)</p>
+                <p className="text-xs text-gray-500 mt-2">Historical photo or office building (4:3 ratio)</p>
               </div>
 
               {/* Paragraphs */}
-              <div className="space-y-4">
+              <div className="col-span-12 lg:col-span-7 space-y-4">
                 <ValidatedTextarea
                   label="Paragraph 1 (Founding)"
                   value={formData.story?.paragraph1 || ''}
@@ -325,8 +336,9 @@ export function AboutEditor() {
             title="Mission Statement"
             description="What drives the organization"
           >
-            <div className="space-y-4">
+            <div className="grid grid-cols-12 gap-4">
               <ValidatedInput
+                wrapperClassName="col-span-12"
                 label="Section Title"
                 value={formData.mission?.title || ''}
                 onChange={(value) => updateField('mission', 'title', value)}
@@ -334,6 +346,7 @@ export function AboutEditor() {
                 placeholder="Our Mission"
               />
               <ValidatedTextarea
+                wrapperClassName="col-span-12"
                 label="Mission Statement"
                 value={formData.mission?.statement || ''}
                 onChange={(value) => updateField('mission', 'statement', value)}
@@ -349,8 +362,9 @@ export function AboutEditor() {
             title="Vision Statement"
             description="The future the organization is working towards"
           >
-            <div className="space-y-4">
+            <div className="grid grid-cols-12 gap-4">
               <ValidatedInput
+                wrapperClassName="col-span-12"
                 label="Section Title"
                 value={formData.vision?.title || ''}
                 onChange={(value) => updateField('vision', 'title', value)}
@@ -358,6 +372,7 @@ export function AboutEditor() {
                 placeholder="Our Vision"
               />
               <ValidatedTextarea
+                wrapperClassName="col-span-12"
                 label="Vision Statement"
                 value={formData.vision?.statement || ''}
                 onChange={(value) => updateField('vision', 'statement', value)}
@@ -373,8 +388,9 @@ export function AboutEditor() {
             title="Core Values Section"
             description="Header for the values section (values are managed in Stats)"
           >
-            <div className="space-y-4">
+            <div className="grid grid-cols-12 gap-4">
               <ValidatedInput
+                wrapperClassName="col-span-12 lg:col-span-6"
                 label="Section Title"
                 value={formData.values?.title || ''}
                 onChange={(value) => updateField('values', 'title', value)}
@@ -382,6 +398,7 @@ export function AboutEditor() {
                 placeholder="Our Core Values"
               />
               <ValidatedInput
+                wrapperClassName="col-span-12 lg:col-span-6"
                 label="Section Tagline"
                 value={formData.values?.tagline || ''}
                 onChange={(value) => updateField('values', 'tagline', value)}
@@ -396,13 +413,24 @@ export function AboutEditor() {
             title="Global Presence Map"
             description="Upload an image for the Global Presence section (world map showing AIQM presence)"
           >
-            <MediaUploader
-              value={formData.globalMapImage || ''}
-              onUpload={(url) => setFormData(prev => ({ ...prev, globalMapImage: url }))}
-              storagePath="about/global-map"
-              label="Global Map Image"
-            />
-            <p className="text-xs text-gray-500 mt-2">Recommended: World map highlighting 13 countries (16:9 ratio)</p>
+            <div className="grid grid-cols-12 gap-4">
+              <div className="col-span-12 lg:col-span-8">
+                <ImageAssetCard
+                  value={formData.globalMapImage || ''}
+                  onChange={(url) => setFormData(prev => ({ ...prev, globalMapImage: url }))}
+                  storagePath="about/global-map"
+                  label="Global Map Image"
+                  aspectRatio="aspect-video"
+                  maxSize="max-w-xl"
+                  placeholderIcon={
+                    <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  }
+                />
+                <p className="text-xs text-gray-500 mt-2">World map highlighting 13 countries (16:9 ratio)</p>
+              </div>
+            </div>
           </FormCard>
         </div>
       )}
@@ -414,14 +442,14 @@ export function AboutEditor() {
             title="Director's Message"
             description="A personal message from the company director"
           >
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-12 gap-4">
               {/* Director Photo */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Director Photo</label>
-                <MediaUploader
+              <div className="col-span-12 lg:col-span-4">
+                <ProfileAssetCard
                   value={formData.director?.image}
-                  onUpload={(url) => updateField('director', 'image', url)}
+                  onChange={(url) => updateField('director', 'image', url)}
                   storagePath="about/director"
+                  label="Director Photo"
                 />
                 <div className="mt-4 space-y-3">
                   <ValidatedInput
@@ -442,7 +470,7 @@ export function AboutEditor() {
               </div>
 
               {/* Message */}
-              <div className="lg:col-span-2 space-y-4">
+              <div className="col-span-12 lg:col-span-8 space-y-4">
                 <ValidatedInput
                   label="Section Title"
                   value={formData.director?.title || ''}

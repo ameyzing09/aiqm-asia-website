@@ -1,5 +1,5 @@
 import { Button } from '../../components/Button'
-import { useCtaBanners } from '../../hooks/firebase'
+import { useCtaBanners, useGlobal } from '../../hooks/firebase'
 
 // Loading skeleton
 function CTABannerSkeleton() {
@@ -19,9 +19,10 @@ function CTABannerSkeleton() {
 }
 
 export function CTABanner() {
-  const { data: ctaBanner, isLoading } = useCtaBanners('courses')
+  const { data: ctaBanner, isLoading: ctaLoading } = useCtaBanners('courses')
+  const { data: global } = useGlobal()
 
-  if (isLoading) {
+  if (ctaLoading) {
     return <CTABannerSkeleton />
   }
 
@@ -43,7 +44,9 @@ export function CTABanner() {
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button
-            href={ctaBanner?.primaryCtaLink || '#enroll'}
+            href={ctaBanner?.primaryCtaLink || global?.enquiryLink || '#enroll'}
+            target={ctaBanner?.primaryCtaLink || global?.enquiryLink ? '_blank' : undefined}
+            rel={ctaBanner?.primaryCtaLink || global?.enquiryLink ? 'noopener noreferrer' : undefined}
             variant="secondary"
             size="lg"
             className="bg-white hover:bg-gray-100 text-primary-700 border-none shadow-xl"

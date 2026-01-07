@@ -50,28 +50,24 @@ export function BenefitsSection() {
   const { data: benefits, isLoading: benefitsLoading } = useCertificationBenefits()
   const { data: stats, isLoading: statsLoading } = useStats()
 
-  // Get specific stats for the benefits section
+  // Get stats for the benefits section (sorted by order from Firebase)
   const displayStats = useMemo(() => {
     if (!stats?.length) return []
-
-    const statIds = ['professionals', 'belts', 'corporateClients', 'successRate']
-    return statIds
-      .map(id => stats.find(s => s.id === id))
-      .filter(Boolean)
-      .slice(0, 4)
+    // Show all active stats, already sorted by order from useStats hook
+    return stats.slice(0, 4)
   }, [stats])
 
-  const isLoading = benefitsLoading || statsLoading
+  // const isLoading = benefitsLoading || statsLoading
 
   return (
     <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-primary-600 via-primary-700 to-accent-600">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
-            {sectionHeader?.title || 'Why Get Certified with AIQM India?'}
+            {sectionHeader?.title}
           </h2>
           <p className="text-xl text-primary-100 max-w-3xl mx-auto">
-            {sectionHeader?.description || 'Transform your career with certifications that deliver real, measurable results'}
+            {sectionHeader?.description}
           </p>
         </div>
 

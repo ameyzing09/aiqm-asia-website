@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ref, get, update, remove } from 'firebase/database'
 import { ref as storageRef, deleteObject } from 'firebase/storage'
@@ -7,9 +7,10 @@ import { ValidatedInput } from '../components/ValidatedInput'
 import { ValidatedTextarea } from '../components/ValidatedTextarea'
 import { FormCard } from '../components/FormCard'
 import { SaveBar } from '../components/SaveBar'
-import { MediaUploader } from '../components/MediaUploader'
-import { motion, AnimatePresence } from 'framer-motion'
+import { MasterDetailLayout } from '../components/MasterDetailLayout'
+import { useStorage } from '../hooks/useStorage'
 import { useToast, getErrorMessage } from '../hooks/useToast'
+import { motion } from 'framer-motion'
 
 // Character limits
 const CHAR_LIMITS = {
@@ -35,10 +36,140 @@ const DEFAULT_DIRECTOR = {
   photoUrl: '',
 }
 
+/**
+ * ProfileAssetCard - Professional headshot uploader for leadership
+ */
+function ProfileAssetCard({ value, onUpload, storagePath, label = 'Photo' }) {
+  const [isDragging, setIsDragging] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
+  const fileInputRef = useRef(null)
+  const { upload, progress, error, uploading, reset } = useStorage()
+
+  const handleFile = useCallback(async (file) => {
+    reset()
+    if (!file.type.startsWith('image/')) return
+    if (file.size > 5 * 1024 * 1024) return
+
+    try {
+      const timestamp = Date.now()
+      const extension = file.name.split('.').pop()
+      const path = `${storagePath}/${timestamp}.${extension}`
+      const url = await upload(file, path)
+      onUpload(url)
+    } catch (err) {
+      console.error('Upload failed:', err)
+    }
+  }, [storagePath, upload, onUpload, reset])
+
+  const handleDrop = useCallback((e) => {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files[0]
+    if (file) handleFile(file)
+  }, [handleFile])
+
+  const handleClick = () => fileInputRef.current?.click()
+  const handleRemove = (e) => {
+    e.stopPropagation()
+    onUpload(null)
+    reset()
+  }
+
+  return (
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-gray-300">{label}</label>
+
+      <div
+        onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+        onDragLeave={(e) => { e.preventDefault(); setIsDragging(false) }}
+        onDrop={handleDrop}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={!value && !uploading ? handleClick : undefined}
+        className={`
+          relative overflow-hidden rounded-xl transition-all duration-200
+          ${!value && !uploading ? 'cursor-pointer' : ''}
+          ${isDragging ? 'ring-2 ring-primary-500 ring-offset-2 ring-offset-gray-900' : ''}
+        `}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+          className="hidden"
+        />
+
+        {/* Has Image */}
+        {value && !uploading && (
+          <div className="relative aspect-square w-full max-w-[140px]">
+            <img src={value} alt="Profile" className="w-full h-full object-cover rounded-xl" />
+            <div className={`
+              absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent
+              rounded-xl flex flex-col justify-end p-3 transition-opacity duration-200
+              ${isHovered ? 'opacity-100' : 'opacity-0 lg:opacity-0'} active:opacity-100
+            `}>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); handleClick() }}
+                  className="flex-1 px-2 py-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg text-xs font-medium transition-colors"
+                >
+                  Change
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRemove}
+                  className="px-2 py-1.5 bg-red-500/30 hover:bg-red-500/50 backdrop-blur-sm text-white rounded-lg text-xs font-medium transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Uploading */}
+        {uploading && (
+          <div className="aspect-square w-full max-w-[140px] bg-white/5 border border-white/10 rounded-xl flex flex-col items-center justify-center">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+              className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full mb-2"
+            />
+            <span className="text-xs text-gray-400">{progress}%</span>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!value && !uploading && (
+          <div className={`
+            aspect-square w-full max-w-[140px] border-2 border-dashed rounded-xl
+            flex flex-col items-center justify-center p-4 transition-all duration-200
+            ${isDragging ? 'border-primary-500 bg-primary-500/10' : 'border-white/30 bg-white/5 hover:bg-white/10 hover:border-primary-400'}
+          `}>
+            <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-2 ${isDragging ? 'bg-primary-500/20' : 'bg-gradient-to-br from-gray-700 to-gray-800'}`}>
+              <svg className={`w-7 h-7 ${isDragging ? 'text-primary-400' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <p className="text-xs text-gray-400 text-center">{isDragging ? 'Drop here' : 'Add photo'}</p>
+          </div>
+        )}
+      </div>
+
+      {error && <p className="text-xs text-red-400">{error}</p>}
+    </div>
+  )
+}
+
 export function LeadershipEditor() {
   const queryClient = useQueryClient()
   const { success, error } = useToast()
   const [activeTab, setActiveTab] = useState('director')
+  const [selectedFacultyId, setSelectedFacultyId] = useState(null)
   const [formData, setFormData] = useState({
     director: DEFAULT_DIRECTOR,
     directorsMessage: '',
@@ -46,7 +177,6 @@ export function LeadershipEditor() {
     faculty: {},
   })
   const [initialData, setInitialData] = useState(formData)
-  const [expandedFaculty, setExpandedFaculty] = useState({})
 
   // Fetch leadership data
   const { data: leadershipData, isLoading: leadershipLoading } = useQuery({
@@ -73,13 +203,11 @@ export function LeadershipEditor() {
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: async (newData) => {
-      // Save leadership data (director + message + impact)
       await update(ref(db, 'siteContent/leadership'), {
         director: newData.director,
         directorsMessage: newData.directorsMessage,
         directorImpact: newData.directorImpact,
       })
-      // Save faculty data
       await update(ref(db, 'siteContent/faculty'), newData.faculty)
     },
     onSuccess: () => {
@@ -93,13 +221,10 @@ export function LeadershipEditor() {
   const deleteFacultyMutation = useMutation({
     mutationFn: async (facultyId) => {
       await remove(ref(db, `siteContent/faculty/${facultyId}`))
-      // Try to delete photo from storage
       try {
         const photoRef = storageRef(storage, `faculty/${facultyId}`)
         await deleteObject(photoRef)
-      } catch {
-        // Photo may not exist, ignore error
-      }
+      } catch { /* Photo may not exist */ }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['siteContent', 'faculty'] })
@@ -150,10 +275,7 @@ export function LeadershipEditor() {
   const updateDirectorField = (field, value) => {
     setFormData(prev => ({
       ...prev,
-      director: {
-        ...prev.director,
-        [field]: value,
-      },
+      director: { ...prev.director, [field]: value },
     }))
   }
 
@@ -163,10 +285,7 @@ export function LeadershipEditor() {
       ...prev,
       directorImpact: {
         ...prev.directorImpact,
-        [impactId]: {
-          ...prev.directorImpact?.[impactId],
-          [field]: value,
-        },
+        [impactId]: { ...prev.directorImpact?.[impactId], [field]: value },
       },
     }))
   }
@@ -177,10 +296,7 @@ export function LeadershipEditor() {
     const maxOrder = Math.max(0, ...Object.values(formData.directorImpact || {}).map(i => i.order || 0))
     setFormData(prev => ({
       ...prev,
-      directorImpact: {
-        ...prev.directorImpact,
-        [newId]: { text: '', order: maxOrder + 1 },
-      },
+      directorImpact: { ...prev.directorImpact, [newId]: { text: '', order: maxOrder + 1 } },
     }))
   }
 
@@ -201,10 +317,11 @@ export function LeadershipEditor() {
       .sort((a, b) => (a.order || 0) - (b.order || 0))
   }, [formData.faculty])
 
-  // Toggle faculty expansion
-  const toggleFaculty = (id) => {
-    setExpandedFaculty(prev => ({ ...prev, [id]: !prev[id] }))
-  }
+  // Selected faculty member
+  const selectedFaculty = useMemo(() => {
+    if (!selectedFacultyId || !formData.faculty[selectedFacultyId]) return null
+    return { id: selectedFacultyId, ...formData.faculty[selectedFacultyId] }
+  }, [selectedFacultyId, formData.faculty])
 
   // Update faculty field
   const updateFacultyField = (facultyId, field, value) => {
@@ -212,10 +329,7 @@ export function LeadershipEditor() {
       ...prev,
       faculty: {
         ...prev.faculty,
-        [facultyId]: {
-          ...prev.faculty[facultyId],
-          [field]: value,
-        },
+        [facultyId]: { ...prev.faculty[facultyId], [field]: value },
       },
     }))
   }
@@ -223,24 +337,15 @@ export function LeadershipEditor() {
   // Add faculty member
   const addFaculty = () => {
     const newId = `faculty_${Date.now()}`
-    const maxOrder = facultyArray.length > 0
-      ? Math.max(...facultyArray.map(f => f.order || 0)) + 1
-      : 1
+    const maxOrder = facultyArray.length > 0 ? Math.max(...facultyArray.map(f => f.order || 0)) + 1 : 1
     setFormData(prev => ({
       ...prev,
       faculty: {
         ...prev.faculty,
-        [newId]: {
-          name: 'New Faculty Member',
-          title: '',
-          experience: '',
-          expertise: '',
-          photoUrl: '',
-          order: maxOrder,
-        },
+        [newId]: { name: 'New Faculty Member', title: '', experience: '', expertise: '', photoUrl: '', order: maxOrder },
       },
     }))
-    setExpandedFaculty(prev => ({ ...prev, [newId]: true }))
+    setSelectedFacultyId(newId)
   }
 
   // Delete faculty member
@@ -250,6 +355,8 @@ export function LeadershipEditor() {
     if (initialData.faculty?.[facultyId]) {
       await deleteFacultyMutation.mutateAsync(facultyId)
     }
+
+    if (selectedFacultyId === facultyId) setSelectedFacultyId(null)
 
     setFormData(prev => {
       const newFaculty = { ...prev.faculty }
@@ -271,20 +378,11 @@ export function LeadershipEditor() {
       success('Leadership data saved successfully!')
     } catch (err) {
       error(getErrorMessage(err))
-      console.error('Failed to save leadership data:', err)
     }
   }
 
   // Discard handler
-  const handleDiscard = () => {
-    setFormData(initialData)
-  }
-
-  // Tab change with warning
-  const handleTabChange = (tab) => {
-    if (isDirty && !window.confirm('You have unsaved changes. Switch tabs anyway?')) return
-    setActiveTab(tab)
-  }
+  const handleDiscard = () => setFormData(initialData)
 
   // Impact array for display
   const impactArray = useMemo(() => {
@@ -307,9 +405,7 @@ export function LeadershipEditor() {
           <p className="text-gray-400 mt-1">Manage director profile and faculty members</p>
         </div>
         <div className="flex gap-2 mb-6">
-          {[1, 2].map(i => (
-            <div key={i} className="h-10 w-28 bg-white/10 rounded-lg animate-pulse" />
-          ))}
+          {[1, 2].map(i => <div key={i} className="h-10 w-28 bg-white/10 rounded-lg animate-pulse" />)}
         </div>
         <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 animate-pulse">
           <div className="space-y-4">
@@ -326,9 +422,7 @@ export function LeadershipEditor() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-white">Leadership</h1>
-        <p className="text-gray-400 mt-1">
-          Manage director profile, message, and faculty members. Changes sync to the live site.
-        </p>
+        <p className="text-gray-400 mt-1">Manage director profile, message, and faculty members.</p>
       </div>
 
       {/* Tabs */}
@@ -336,7 +430,7 @@ export function LeadershipEditor() {
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => handleTabChange(tab.id)}
+            onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
               activeTab === tab.id
                 ? 'bg-primary-600 text-white'
@@ -345,9 +439,6 @@ export function LeadershipEditor() {
           >
             <span>{tab.icon}</span>
             {tab.label}
-            {activeTab === tab.id && isDirty && (
-              <span className="ml-1 w-2 h-2 bg-amber-400 rounded-full" />
-            )}
           </button>
         ))}
       </div>
@@ -356,27 +447,23 @@ export function LeadershipEditor() {
       {activeTab === 'director' && (
         <div className="space-y-6">
           {/* Director Profile */}
-          <FormCard
-            title="Director Profile"
-            description="Personal details and credentials"
-          >
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Photo */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Director Photo</label>
-                <MediaUploader
+          <FormCard title="Director Profile" description="Personal details and credentials">
+            <div className="grid grid-cols-12 gap-6">
+              {/* Photo - Mobile first, Desktop col-span-3 */}
+              <div className="col-span-12 lg:col-span-3 order-first">
+                <ProfileAssetCard
                   value={formData.director?.photoUrl}
                   onUpload={(url) => updateDirectorField('photoUrl', url)}
                   storagePath="leadership/director"
-                  compact
+                  label="Profile Photo"
                 />
-                <p className="text-xs text-gray-500 mt-2">Square photo recommended (1:1)</p>
               </div>
 
-              {/* Details */}
-              <div className="lg:col-span-2 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Name & Title - col-span-9 on desktop */}
+              <div className="col-span-12 lg:col-span-9 space-y-4">
+                <div className="grid grid-cols-12 gap-4">
                   <ValidatedInput
+                    wrapperClassName="col-span-12 lg:col-span-6"
                     label="Full Name"
                     value={formData.director?.name || ''}
                     onChange={(value) => updateDirectorField('name', value)}
@@ -385,6 +472,7 @@ export function LeadershipEditor() {
                     required
                   />
                   <ValidatedInput
+                    wrapperClassName="col-span-12 lg:col-span-6"
                     label="Title / Designation"
                     value={formData.director?.title || ''}
                     onChange={(value) => updateDirectorField('title', value)}
@@ -401,42 +489,43 @@ export function LeadershipEditor() {
                   placeholder="B.Tech (Hons.), IIT Mumbai | MBA, IIM Kolkata"
                   rows={2}
                 />
-
-                <ValidatedTextarea
-                  label="Professional Credentials"
-                  value={formData.director?.credentials || ''}
-                  onChange={(value) => updateDirectorField('credentials', value)}
-                  maxLength={CHAR_LIMITS.credentials}
-                  placeholder="Lean Six Sigma Master Black Belt | ISO Lead Auditor"
-                  rows={2}
-                />
-
-                <ValidatedTextarea
-                  label="Experience Summary"
-                  value={formData.director?.experience || ''}
-                  onChange={(value) => updateDirectorField('experience', value)}
-                  maxLength={CHAR_LIMITS.experience}
-                  placeholder="30+ years across Johnson & Johnson, Baker Gauges..."
-                  rows={2}
-                />
-
-                <ValidatedTextarea
-                  label="Awards & Recognition"
-                  value={formData.director?.recognition || ''}
-                  onChange={(value) => updateDirectorField('recognition', value)}
-                  maxLength={CHAR_LIMITS.recognition}
-                  placeholder="Outstanding People of the 20th Century Award..."
-                  rows={2}
-                />
               </div>
+
+              {/* Credentials - Full width */}
+              <ValidatedTextarea
+                wrapperClassName="col-span-12"
+                label="Professional Credentials"
+                value={formData.director?.credentials || ''}
+                onChange={(value) => updateDirectorField('credentials', value)}
+                maxLength={CHAR_LIMITS.credentials}
+                placeholder="Lean Six Sigma Master Black Belt | ISO Lead Auditor"
+                rows={2}
+              />
+
+              <ValidatedTextarea
+                wrapperClassName="col-span-12 lg:col-span-6"
+                label="Experience Summary"
+                value={formData.director?.experience || ''}
+                onChange={(value) => updateDirectorField('experience', value)}
+                maxLength={CHAR_LIMITS.experience}
+                placeholder="30+ years across Johnson & Johnson, Baker Gauges..."
+                rows={2}
+              />
+
+              <ValidatedTextarea
+                wrapperClassName="col-span-12 lg:col-span-6"
+                label="Awards & Recognition"
+                value={formData.director?.recognition || ''}
+                onChange={(value) => updateDirectorField('recognition', value)}
+                maxLength={CHAR_LIMITS.recognition}
+                placeholder="Outstanding People of the 20th Century Award..."
+                rows={2}
+              />
             </div>
           </FormCard>
 
           {/* Director's Message */}
-          <FormCard
-            title="Director's Message"
-            description="Personal message displayed on the About page"
-          >
+          <FormCard title="Director's Message" description="Personal message displayed on the About page">
             <ValidatedTextarea
               label="Message"
               value={formData.directorsMessage || ''}
@@ -448,35 +537,32 @@ export function LeadershipEditor() {
           </FormCard>
 
           {/* Impact Statements */}
-          <FormCard
-            title="Impact Statements"
-            description="Key achievements displayed alongside the director's profile"
-          >
+          <FormCard title="Impact Statements" description="Key achievements displayed alongside the director's profile">
             <div className="space-y-4">
               {impactArray.map((impact) => (
-                <div key={impact.id} className="flex items-start gap-4">
-                  <div className="flex-1">
-                    <ValidatedInput
-                      label={`Statement ${impact.order || ''}`}
-                      value={impact.text || ''}
-                      onChange={(value) => updateImpactField(impact.id, 'text', value)}
-                      maxLength={CHAR_LIMITS.impactText}
-                      placeholder="Mentored 4,300+ Lean Six Sigma projects"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2 pt-7">
+                <div key={impact.id} className="grid grid-cols-12 gap-4 items-end">
+                  <ValidatedInput
+                    wrapperClassName="col-span-12 lg:col-span-9"
+                    label={`Statement ${impact.order || ''}`}
+                    value={impact.text || ''}
+                    onChange={(value) => updateImpactField(impact.id, 'text', value)}
+                    maxLength={CHAR_LIMITS.impactText}
+                    placeholder="Mentored 4,300+ Lean Six Sigma projects"
+                  />
+                  <div className="col-span-6 lg:col-span-2">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Order</label>
                     <input
                       type="number"
                       value={impact.order || 0}
                       onChange={(e) => updateImpactField(impact.id, 'order', parseInt(e.target.value) || 0)}
-                      className="w-16 px-2 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm"
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary-500"
                       min={1}
-                      title="Order"
                     />
+                  </div>
+                  <div className="col-span-6 lg:col-span-1 flex justify-end">
                     <button
                       onClick={() => deleteImpact(impact.id)}
-                      className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
-                      title="Delete"
+                      className="p-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -499,182 +585,130 @@ export function LeadershipEditor() {
         </div>
       )}
 
-      {/* Faculty Tab */}
+      {/* Faculty Tab - Master-Detail Layout */}
       {activeTab === 'faculty' && (
-        <div className="space-y-6">
-          {/* Add Button */}
-          <div className="flex justify-end">
-            <button
-              onClick={addFaculty}
-              className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Add Faculty Member
-            </button>
-          </div>
+        <MasterDetailLayout
+          items={facultyArray}
+          selectedId={selectedFacultyId}
+          onSelect={setSelectedFacultyId}
+          renderListItemMeta={(member) => (
+            <p className="text-xs text-gray-500">{member.title || 'No title'}</p>
+          )}
+          emptyMessage="No faculty members yet"
+          addButton={{ label: 'Add Member', onClick: addFaculty }}
+          detailTitle={selectedFaculty?.name}
+        >
+          {selectedFaculty && (
+            <div className="space-y-6">
+              {/* Profile Section */}
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Profile
+                </h4>
 
-          {/* Faculty Accordion */}
-          <div className="space-y-4">
-            {facultyArray.map((member) => (
-              <div
-                key={member.id}
-                className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl overflow-hidden"
-              >
-                {/* Header */}
-                <button
-                  onClick={() => toggleFaculty(member.id)}
-                  className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    {member.photoUrl ? (
-                      <img
-                        src={member.photoUrl}
-                        alt={member.name}
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 bg-primary-600/20 rounded-full flex items-center justify-center">
-                        <svg className="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                      </div>
-                    )}
-                    <div className="text-left">
-                      <h3 className="text-lg font-semibold text-white">{member.name || 'Untitled'}</h3>
-                      <p className="text-sm text-gray-400">{member.title || 'No title'}</p>
-                    </div>
+                <div className="grid grid-cols-12 gap-6">
+                  {/* Photo */}
+                  <div className="col-span-12 lg:col-span-4 order-first">
+                    <ProfileAssetCard
+                      value={selectedFaculty.photoUrl}
+                      onUpload={(url) => updateFacultyField(selectedFaculty.id, 'photoUrl', url)}
+                      storagePath={`faculty/${selectedFaculty.id}`}
+                      label="Profile Photo"
+                    />
                   </div>
-                  <motion.svg
-                    className="w-5 h-5 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    animate={{ rotate: expandedFaculty[member.id] ? 180 : 0 }}
-                    transition={{ duration: 0.2 }}
+
+                  {/* Name & Title */}
+                  <div className="col-span-12 lg:col-span-8 space-y-4">
+                    <ValidatedInput
+                      label="Full Name"
+                      value={selectedFaculty.name || ''}
+                      onChange={(value) => updateFacultyField(selectedFaculty.id, 'name', value)}
+                      maxLength={CHAR_LIMITS.name}
+                      placeholder="Dr. Jane Smith"
+                      required
+                    />
+                    <ValidatedInput
+                      label="Title / Designation"
+                      value={selectedFaculty.title || ''}
+                      onChange={(value) => updateFacultyField(selectedFaculty.id, 'title', value)}
+                      maxLength={CHAR_LIMITS.title}
+                      placeholder="Six Sigma Master Black Belt"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Experience & Expertise */}
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Background
+                </h4>
+
+                <div className="grid grid-cols-12 gap-4">
+                  <ValidatedTextarea
+                    wrapperClassName="col-span-12"
+                    label="Experience"
+                    value={selectedFaculty.experience || ''}
+                    onChange={(value) => updateFacultyField(selectedFaculty.id, 'experience', value)}
+                    maxLength={CHAR_LIMITS.experience}
+                    placeholder="30+ years • 2,500+ projects mentored"
+                    rows={2}
+                  />
+
+                  <ValidatedTextarea
+                    wrapperClassName="col-span-12"
+                    label="Expertise Areas"
+                    value={selectedFaculty.expertise || ''}
+                    onChange={(value) => updateFacultyField(selectedFaculty.id, 'expertise', value)}
+                    maxLength={CHAR_LIMITS.expertise}
+                    placeholder="Lean Six Sigma, TQM, Integrated Management Systems"
+                    rows={2}
+                  />
+
+                  {/* Order */}
+                  <div className="col-span-12 lg:col-span-4">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Display Order</label>
+                    <input
+                      type="number"
+                      value={selectedFaculty.order || 0}
+                      onChange={(e) => updateFacultyField(selectedFaculty.id, 'order', parseInt(e.target.value) || 0)}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-primary-500/20 focus:border-primary-500 transition-colors"
+                      min={1}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Danger Zone */}
+              <div className="pt-6 border-t border-white/10">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-400">Danger Zone</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Remove this faculty member</p>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteFaculty(selectedFaculty.id)}
+                    disabled={deleteFacultyMutation.isPending}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 hover:border-red-500/30 rounded-lg transition-all disabled:opacity-50"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </motion.svg>
-                </button>
-
-                {/* Content */}
-                <AnimatePresence>
-                  {expandedFaculty[member.id] && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-6 pb-6 border-t border-white/10 pt-6">
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                          {/* Photo */}
-                          <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">Photo</label>
-                            <MediaUploader
-                              value={member.photoUrl}
-                              onUpload={(url) => updateFacultyField(member.id, 'photoUrl', url)}
-                              storagePath={`faculty/${member.id}`}
-                              compact
-                            />
-                          </div>
-
-                          {/* Details */}
-                          <div className="lg:col-span-2 space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <ValidatedInput
-                                label="Full Name"
-                                value={member.name || ''}
-                                onChange={(value) => updateFacultyField(member.id, 'name', value)}
-                                maxLength={CHAR_LIMITS.name}
-                                placeholder="Dr. Jane Smith"
-                                required
-                              />
-                              <ValidatedInput
-                                label="Title / Designation"
-                                value={member.title || ''}
-                                onChange={(value) => updateFacultyField(member.id, 'title', value)}
-                                maxLength={CHAR_LIMITS.title}
-                                placeholder="Six Sigma Master Black Belt"
-                              />
-                            </div>
-
-                            <ValidatedTextarea
-                              label="Experience"
-                              value={member.experience || ''}
-                              onChange={(value) => updateFacultyField(member.id, 'experience', value)}
-                              maxLength={CHAR_LIMITS.experience}
-                              placeholder="30+ years • 2,500+ projects mentored"
-                              rows={2}
-                            />
-
-                            <ValidatedTextarea
-                              label="Expertise Areas"
-                              value={member.expertise || ''}
-                              onChange={(value) => updateFacultyField(member.id, 'expertise', value)}
-                              maxLength={CHAR_LIMITS.expertise}
-                              placeholder="Lean Six Sigma, TQM, Integrated Management Systems"
-                              rows={2}
-                            />
-
-                            <div className="flex items-center gap-3">
-                              <label className="text-sm text-gray-400">Display Order:</label>
-                              <input
-                                type="number"
-                                value={member.order || 0}
-                                onChange={(e) => updateFacultyField(member.id, 'order', parseInt(e.target.value) || 0)}
-                                className="w-20 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm"
-                                min={1}
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Delete */}
-                        <div className="mt-6 pt-6 border-t border-white/10 flex justify-end">
-                          <button
-                            onClick={() => handleDeleteFaculty(member.id)}
-                            disabled={deleteFacultyMutation.isPending}
-                            className="flex items-center gap-2 px-4 py-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                            {deleteFacultyMutation.isPending ? 'Deleting...' : 'Delete'}
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <span className="text-sm font-medium">
+                      {deleteFacultyMutation.isPending ? 'Deleting...' : 'Delete Member'}
+                    </span>
+                  </button>
+                </div>
               </div>
-            ))}
-          </div>
-
-          {/* Empty State */}
-          {facultyArray.length === 0 && (
-            <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-8 text-center">
-              <div className="w-16 h-16 bg-primary-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <h2 className="text-xl font-semibold text-white mb-2">No Faculty Members</h2>
-              <p className="text-gray-400 mb-6">Add your first faculty member to get started.</p>
-              <button
-                onClick={addFaculty}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Add Faculty Member
-              </button>
             </div>
           )}
-        </div>
+        </MasterDetailLayout>
       )}
 
       {/* Save Bar */}

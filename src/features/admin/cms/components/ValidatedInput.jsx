@@ -18,6 +18,7 @@ export function ValidatedInput({
   type = 'text',
   error,
   className = '',
+  wrapperClassName = '', // For grid column control (e.g., 'col-span-8')
 }) {
   const strValue = String(value)
   const length = strValue.length
@@ -49,6 +50,7 @@ export function ValidatedInput({
     : 'focus:ring-primary-500/20 focus:border-primary-500'
 
   return (
+    <div className={wrapperClassName}>
     <div className={`space-y-2 ${className}`}>
       {label && (
         <label className="block text-sm font-medium text-gray-300">
@@ -89,6 +91,7 @@ export function ValidatedInput({
           </span>
         )}
       </div>
+    </div>
     </div>
   )
 }

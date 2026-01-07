@@ -95,8 +95,10 @@ export function Navigation() {
 
           {/* Right side controls */}
           <div className="flex items-center space-x-4">
-            {/* Theme Switcher */}
-            <ThemeSwitcher className="hidden md:flex" />
+            {/* Theme Switcher - conditionally rendered based on feature flag */}
+            {global?.features?.enableThemeSwitcher && (
+              <ThemeSwitcher className="hidden md:flex" />
+            )}
 
             {/* Dark Mode Toggle */}
             <button
@@ -120,7 +122,14 @@ export function Navigation() {
             </button>
 
             {/* Enroll Now Button */}
-            <Button href="#enroll" variant="accent" size="md" className="hidden md:block">
+            <Button
+              href={global?.enquiryLink || '#enroll'}
+              target={global?.enquiryLink ? '_blank' : undefined}
+              rel={global?.enquiryLink ? 'noopener noreferrer' : undefined}
+              variant="accent"
+              size="md"
+              className="hidden md:block"
+            >
               {ctaButtonText}
             </Button>
 
@@ -148,6 +157,7 @@ export function Navigation() {
           onClose={() => setMobileMenuOpen(false)}
           navLinks={NAV_LINKS}
           ctaButtonText={ctaButtonText}
+          enquiryLink={global?.enquiryLink}
         />
       </div>
     </nav>

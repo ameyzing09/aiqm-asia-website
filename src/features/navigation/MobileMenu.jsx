@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Button } from '../../components/Button'
 
-export function MobileMenu({ isOpen, onClose, navLinks = [], ctaButtonText = 'Enroll Now' }) {
+export function MobileMenu({ isOpen, onClose, navLinks = [], ctaButtonText = 'Enroll Now', enquiryLink = '' }) {
   if (!isOpen) return null
 
   return (
@@ -29,7 +29,9 @@ export function MobileMenu({ isOpen, onClose, navLinks = [], ctaButtonText = 'En
         )
       })}
       <Button
-        href="#enroll"
+        href={enquiryLink || '#enroll'}
+        target={enquiryLink ? '_blank' : undefined}
+        rel={enquiryLink ? 'noopener noreferrer' : undefined}
         variant="accent"
         size="md"
         onClick={onClose}

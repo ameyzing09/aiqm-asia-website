@@ -1,14 +1,14 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ref, get, update, remove } from 'firebase/database'
 import { db } from '../../../../services/firebase'
 import { ValidatedInput } from '../components/ValidatedInput'
 import { ValidatedTextarea } from '../components/ValidatedTextarea'
-import { FormCard } from '../components/FormCard'
 import { SaveBar } from '../components/SaveBar'
-import { MediaUploader } from '../components/MediaUploader'
-import { motion, AnimatePresence } from 'framer-motion'
+import { MasterDetailLayout } from '../components/MasterDetailLayout'
+import { useStorage } from '../hooks/useStorage'
 import { useToast, getErrorMessage } from '../hooks/useToast'
+import { motion } from 'framer-motion'
 
 // Character limits for courses
 const CHAR_LIMITS = {
@@ -20,12 +20,415 @@ const CHAR_LIMITS = {
   outcome: 150,
 }
 
+/**
+ * ImageAssetCard - Professional course image uploader
+ *
+ * Features:
+ * - Large 120x120px preview with aspect-square
+ * - High-contrast placeholder when empty
+ * - Overlay actions on hover/tap
+ * - Responsive: Full-width card on mobile
+ */
+function ImageAssetCard({ value, onUpload, storagePath, label = 'Course Image' }) {
+  const [isDragging, setIsDragging] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
+  const fileInputRef = useRef(null)
+  const { upload, progress, error, uploading, reset } = useStorage()
+
+  const handleFile = useCallback(async (file) => {
+    reset()
+    if (!file.type.startsWith('image/')) return
+    if (file.size > 5 * 1024 * 1024) return
+
+    try {
+      const timestamp = Date.now()
+      const extension = file.name.split('.').pop()
+      const path = `${storagePath}/${timestamp}.${extension}`
+      const url = await upload(file, path)
+      onUpload(url)
+    } catch (err) {
+      console.error('Upload failed:', err)
+    }
+  }, [storagePath, upload, onUpload, reset])
+
+  const handleDrop = useCallback((e) => {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files[0]
+    if (file) handleFile(file)
+  }, [handleFile])
+
+  const handleClick = () => fileInputRef.current?.click()
+  const handleRemove = (e) => {
+    e.stopPropagation()
+    onUpload(null)
+    reset()
+  }
+
+  return (
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-gray-300">{label}</label>
+
+      <div
+        onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+        onDragLeave={(e) => { e.preventDefault(); setIsDragging(false) }}
+        onDrop={handleDrop}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={!value && !uploading ? handleClick : undefined}
+        className={`
+          relative overflow-hidden rounded-xl transition-all duration-200
+          ${!value && !uploading ? 'cursor-pointer' : ''}
+          ${isDragging ? 'ring-2 ring-primary-500 ring-offset-2 ring-offset-gray-900' : ''}
+        `}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+          className="hidden"
+        />
+
+        {/* Has Image - Show Preview with Overlay Actions */}
+        {value && !uploading && (
+          <div className="relative aspect-square w-full max-w-[160px]">
+            <img
+              src={value}
+              alt="Course"
+              className="w-full h-full object-cover rounded-xl"
+            />
+            {/* Overlay Actions - Always visible on mobile, hover on desktop */}
+            <div className={`
+              absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent
+              rounded-xl flex flex-col justify-end p-3
+              transition-opacity duration-200
+              ${isHovered ? 'opacity-100' : 'opacity-0 lg:opacity-0'}
+              active:opacity-100
+            `}>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); handleClick() }}
+                  className="flex-1 px-3 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  Change
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRemove}
+                  className="px-3 py-2 bg-red-500/30 hover:bg-red-500/50 backdrop-blur-sm text-white rounded-lg text-xs font-medium transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            {/* Touch indicator for mobile */}
+            <div className="absolute top-2 right-2 lg:hidden">
+              <div className="w-6 h-6 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center">
+                <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Uploading State */}
+        {uploading && (
+          <div className="aspect-square w-full max-w-[160px] bg-white/5 border border-white/10 rounded-xl flex flex-col items-center justify-center">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+              className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full mb-3"
+            />
+            <span className="text-xs text-gray-400">{progress}%</span>
+          </div>
+        )}
+
+        {/* Empty State - High Contrast Placeholder */}
+        {!value && !uploading && (
+          <div className={`
+            aspect-square w-full max-w-[160px] border-2 border-dashed rounded-xl
+            flex flex-col items-center justify-center p-4
+            transition-all duration-200
+            ${isDragging
+              ? 'border-primary-500 bg-primary-500/10'
+              : 'border-white/30 bg-white/5 hover:bg-white/10 hover:border-primary-400'
+            }
+          `}>
+            {/* Large Photo Placeholder Icon */}
+            <div className={`
+              w-16 h-16 rounded-2xl flex items-center justify-center mb-3
+              ${isDragging ? 'bg-primary-500/20' : 'bg-gradient-to-br from-gray-700 to-gray-800'}
+            `}>
+              <svg className={`w-8 h-8 ${isDragging ? 'text-primary-400' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <p className="text-xs text-gray-400 text-center font-medium">
+              {isDragging ? 'Drop here' : 'Click or drag'}
+            </p>
+            <p className="text-xs text-gray-500 text-center mt-1">
+              JPG, PNG up to 5MB
+            </p>
+          </div>
+        )}
+      </div>
+
+      {error && (
+        <p className="text-xs text-red-400 flex items-center gap-1">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {error}
+        </p>
+      )}
+    </div>
+  )
+}
+
+/**
+ * DocumentAssetCard - Professional certificate/document uploader
+ *
+ * Features:
+ * - Document card styling with thumbnail preview
+ * - Dashed border dropzone for empty state
+ * - Aspect ratio preservation (4:3 for certificates)
+ * - Overlay actions inside preview
+ */
+function DocumentAssetCard({ value, onUpload, storagePath, label = 'Sample Certificate' }) {
+  const [isDragging, setIsDragging] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
+  const fileInputRef = useRef(null)
+  const { upload, progress, error, uploading, reset } = useStorage()
+
+  const handleFile = useCallback(async (file) => {
+    reset()
+    if (!file.type.startsWith('image/') && file.type !== 'application/pdf') return
+    if (file.size > 10 * 1024 * 1024) return
+
+    try {
+      const timestamp = Date.now()
+      const extension = file.name.split('.').pop()
+      const path = `${storagePath}/${timestamp}.${extension}`
+      const url = await upload(file, path)
+      onUpload(url)
+    } catch (err) {
+      console.error('Upload failed:', err)
+    }
+  }, [storagePath, upload, onUpload, reset])
+
+  const handleDrop = useCallback((e) => {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files[0]
+    if (file) handleFile(file)
+  }, [handleFile])
+
+  const handleClick = () => fileInputRef.current?.click()
+  const handleRemove = (e) => {
+    e.stopPropagation()
+    onUpload(null)
+    reset()
+  }
+
+  const isPdf = value?.toLowerCase().endsWith('.pdf')
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-medium text-gray-300">{label}</label>
+        {value && (
+          <a
+            href={value}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-primary-400 hover:text-primary-300 flex items-center gap-1"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+            View full
+          </a>
+        )}
+      </div>
+
+      <div
+        onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+        onDragLeave={(e) => { e.preventDefault(); setIsDragging(false) }}
+        onDrop={handleDrop}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={!value && !uploading ? handleClick : undefined}
+        className={`
+          relative overflow-hidden rounded-xl transition-all duration-200
+          ${!value && !uploading ? 'cursor-pointer' : ''}
+          ${isDragging ? 'ring-2 ring-primary-500 ring-offset-2 ring-offset-gray-900' : ''}
+        `}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,.pdf"
+          onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+          className="hidden"
+        />
+
+        {/* Has Document - Show Preview Card */}
+        {value && !uploading && (
+          <div className="relative bg-gradient-to-br from-gray-800/80 to-gray-900/80 border border-white/10 rounded-xl overflow-hidden">
+            {/* Document Preview */}
+            <div className="aspect-[4/3] relative">
+              {isPdf ? (
+                // PDF Placeholder
+                <div className="w-full h-full bg-gradient-to-br from-red-900/20 to-red-800/10 flex flex-col items-center justify-center">
+                  <div className="w-16 h-20 bg-white/10 rounded-lg flex flex-col items-center justify-center mb-3 border border-white/20">
+                    <svg className="w-8 h-8 text-red-400" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zM8.5 13a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm0 4.5c1.93 0 3.5-1.57 3.5-3.5S10.43 10.5 8.5 10.5 5 12.07 5 14s1.57 3.5 3.5 3.5zm6.5-3h-2v-1h2v1zm0 2h-2v-1h2v1zm2-2h-1v-1h1v1zm0 2h-1v-1h1v1z"/>
+                    </svg>
+                    <span className="text-[10px] text-red-400 font-bold mt-1">PDF</span>
+                  </div>
+                  <p className="text-xs text-gray-400">Certificate Document</p>
+                </div>
+              ) : (
+                // Image Preview
+                <img
+                  src={value}
+                  alt="Certificate"
+                  className="w-full h-full object-cover"
+                />
+              )}
+
+              {/* Overlay Actions */}
+              <div className={`
+                absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent
+                flex flex-col justify-end p-4
+                transition-opacity duration-200
+                ${isHovered ? 'opacity-100' : 'opacity-0 lg:opacity-0'}
+                active:opacity-100
+              `}>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); handleClick() }}
+                    className="flex-1 px-4 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    Replace
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRemove}
+                    className="px-4 py-2.5 bg-red-500/30 hover:bg-red-500/50 backdrop-blur-sm text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* Touch indicator for mobile */}
+              <div className="absolute top-3 right-3 lg:hidden">
+                <div className="w-8 h-8 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Uploading State */}
+        {uploading && (
+          <div className="aspect-[4/3] bg-white/5 border border-white/10 rounded-xl flex flex-col items-center justify-center">
+            <div className="w-full max-w-[200px] mb-4 px-6">
+              <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  className="h-full bg-primary-500 rounded-full"
+                />
+              </div>
+            </div>
+            <motion.span
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+              className="text-sm text-primary-400 font-medium"
+            >
+              Uploading... {progress}%
+            </motion.span>
+          </div>
+        )}
+
+        {/* Empty State - Dashed Border Dropzone */}
+        {!value && !uploading && (
+          <div className={`
+            aspect-[4/3] border-2 border-dashed rounded-xl
+            flex flex-col items-center justify-center p-6
+            transition-all duration-200
+            ${isDragging
+              ? 'border-primary-500 bg-primary-500/10'
+              : 'border-white/30 bg-white/5 hover:bg-white/10 hover:border-primary-400'
+            }
+          `}>
+            {/* Document Icon */}
+            <div className={`
+              w-20 h-24 rounded-xl flex flex-col items-center justify-center mb-4 relative
+              ${isDragging ? 'bg-primary-500/20' : 'bg-gradient-to-br from-gray-700 to-gray-800 border border-white/10'}
+            `}>
+              {/* Folded corner effect */}
+              <div className="absolute top-0 right-0 w-6 h-6 bg-gradient-to-br from-gray-600 to-gray-700 rounded-bl-lg" />
+              <svg className={`w-10 h-10 ${isDragging ? 'text-primary-400' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+
+            <p className="text-sm text-gray-300 text-center font-medium mb-1">
+              {isDragging ? 'Drop certificate here' : 'Upload Sample Certificate'}
+            </p>
+            <p className="text-xs text-gray-500 text-center">
+              PDF or JPG up to 10MB
+            </p>
+
+            {/* Upload hint on desktop */}
+            <div className="mt-4 px-4 py-2 bg-white/5 rounded-lg hidden sm:flex items-center gap-2">
+              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <span className="text-xs text-gray-500">Drag & drop or click to browse</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {error && (
+        <p className="text-xs text-red-400 flex items-center gap-1">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {error}
+        </p>
+      )}
+    </div>
+  )
+}
+
 export function CoursesEditor() {
   const queryClient = useQueryClient()
   const { success, error } = useToast()
   const [formData, setFormData] = useState({})
   const [initialData, setInitialData] = useState({})
-  const [expandedCourses, setExpandedCourses] = useState({})
+  const [selectedCourseId, setSelectedCourseId] = useState(null)
 
   // Fetch courses data
   const { data, isLoading } = useQuery({
@@ -60,8 +463,10 @@ export function CoursesEditor() {
   })
 
   // Initialize form data when Firebase data loads
+  // This pattern is necessary for editable forms - local state must diverge from server state during editing
   useEffect(() => {
     if (data) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing query data to local form state for editing
       setFormData(data)
       setInitialData(data)
     }
@@ -93,13 +498,11 @@ export function CoursesEditor() {
       .sort((a, b) => (a.order || 0) - (b.order || 0))
   }, [formData])
 
-  // Toggle course expansion
-  const toggleCourse = (courseId) => {
-    setExpandedCourses(prev => ({
-      ...prev,
-      [courseId]: !prev[courseId]
-    }))
-  }
+  // Get selected course
+  const selectedCourse = useMemo(() => {
+    if (!selectedCourseId || !formData[selectedCourseId]) return null
+    return { id: selectedCourseId, ...formData[selectedCourseId] }
+  }, [selectedCourseId, formData])
 
   // Update a specific course field
   const updateCourseField = (courseId, field, value) => {
@@ -133,7 +536,7 @@ export function CoursesEditor() {
         active: true,
       },
     }))
-    setExpandedCourses(prev => ({ ...prev, [newId]: true }))
+    setSelectedCourseId(newId)
   }
 
   // Delete a course
@@ -142,12 +545,14 @@ export function CoursesEditor() {
       return
     }
 
-    // If it's already in Firebase, delete it there
     if (initialData[courseId]) {
       await deleteMutation.mutateAsync(courseId)
     }
 
-    // Remove from local state
+    if (selectedCourseId === courseId) {
+      setSelectedCourseId(null)
+    }
+
     setFormData(prev => {
       const newData = { ...prev }
       delete newData[courseId]
@@ -177,6 +582,11 @@ export function CoursesEditor() {
     setFormData(initialData)
   }
 
+  // Render list item meta
+  const renderListItemMeta = (course) => (
+    <p className="text-xs text-gray-500">{course.level} • {course.duration}</p>
+  )
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -184,15 +594,24 @@ export function CoursesEditor() {
           <h1 className="text-2xl font-bold text-white">Courses</h1>
           <p className="text-gray-400 mt-1">Manage certification programs and course details</p>
         </div>
-        <div className="space-y-4">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 animate-pulse">
-              <div className="flex items-center justify-between">
-                <div className="h-6 w-48 bg-white/10 rounded" />
-                <div className="h-8 w-8 bg-white/10 rounded" />
+        <div className="grid grid-cols-12 gap-6">
+          <div className="col-span-12 lg:col-span-4">
+            <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 animate-pulse">
+              <div className="space-y-3">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="h-16 bg-white/10 rounded-lg" />
+                ))}
               </div>
             </div>
-          ))}
+          </div>
+          <div className="col-span-12 lg:col-span-8 hidden lg:block">
+            <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 animate-pulse">
+              <div className="space-y-4">
+                <div className="h-8 w-48 bg-white/10 rounded" />
+                <div className="h-32 bg-white/10 rounded" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -201,224 +620,215 @@ export function CoursesEditor() {
   return (
     <div className="space-y-6 pb-24">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Courses</h1>
-          <p className="text-gray-400 mt-1">
-            Manage certification programs and course details. Changes sync to the live site.
-          </p>
-        </div>
-        <button
-          onClick={addCourse}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Add Course
-        </button>
+      <div>
+        <h1 className="text-2xl font-bold text-white">Courses</h1>
+        <p className="text-gray-400 mt-1">
+          Manage certification programs and course details. Changes sync to the live site.
+        </p>
       </div>
 
-      {/* Courses Accordion */}
-      <div className="space-y-4">
-        {coursesArray.map((course) => (
-          <div
-            key={course.id}
-            className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl overflow-hidden"
-          >
-            {/* Accordion Header */}
-            <button
-              onClick={() => toggleCourse(course.id)}
-              className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors"
-            >
-              <div className="flex items-center gap-4">
-                {course.image ? (
-                  <img
-                    src={course.image}
-                    alt={course.title}
-                    className="w-12 h-12 rounded-lg object-cover"
+      {/* Master-Detail Layout */}
+      <MasterDetailLayout
+        items={coursesArray}
+        selectedId={selectedCourseId}
+        onSelect={setSelectedCourseId}
+        renderListItemMeta={renderListItemMeta}
+        emptyMessage="No courses yet"
+        addButton={{ label: 'Add Course', onClick: addCourse }}
+        detailTitle={selectedCourse?.title}
+      >
+        {selectedCourse && (
+          <div className="space-y-8">
+            {/* ═══════════════════════════════════════════════════════════════
+                SECTION 1: Profile Header - Image + Basic Info
+                Mobile: Image full-width on top, then title below
+                Desktop: Image col-span-4, Title col-span-8 side-by-side
+            ═══════════════════════════════════════════════════════════════ */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Course Identity
+              </h4>
+
+              <div className="grid grid-cols-12 gap-6">
+                {/* Course Image - Mobile: First & Full Width, Desktop: col-span-4 */}
+                <div className="col-span-12 lg:col-span-4 order-first">
+                  <ImageAssetCard
+                    value={selectedCourse.image}
+                    onUpload={(url) => updateCourseField(selectedCourse.id, 'image', url)}
+                    storagePath={`courses/${selectedCourse.id}`}
+                    label="Course Image"
                   />
-                ) : (
-                  <div className="w-12 h-12 bg-primary-600/20 rounded-lg flex items-center justify-center">
-                    <svg className="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
+                </div>
+
+                {/* Title & Meta Fields - Mobile: Below image, Desktop: col-span-8 */}
+                <div className="col-span-12 lg:col-span-8 space-y-4">
+                  <ValidatedInput
+                    label="Course Title"
+                    value={selectedCourse.title || ''}
+                    onChange={(value) => updateCourseField(selectedCourse.id, 'title', value)}
+                    maxLength={CHAR_LIMITS.title}
+                    placeholder="Lean Six Sigma Green Belt"
+                    required
+                  />
+
+                  {/* Level, Duration, Order, Status - 2x2 grid */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <ValidatedInput
+                      label="Level"
+                      value={selectedCourse.level || ''}
+                      onChange={(value) => updateCourseField(selectedCourse.id, 'level', value)}
+                      maxLength={CHAR_LIMITS.level}
+                      placeholder="Intermediate"
+                    />
+                    <ValidatedInput
+                      label="Duration"
+                      value={selectedCourse.duration || ''}
+                      onChange={(value) => updateCourseField(selectedCourse.id, 'duration', value)}
+                      maxLength={CHAR_LIMITS.duration}
+                      placeholder="3-4 Days"
+                    />
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-300">Order</label>
+                      <input
+                        type="number"
+                        value={selectedCourse.order || 0}
+                        onChange={(e) => updateCourseField(selectedCourse.id, 'order', parseInt(e.target.value) || 0)}
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-primary-500/20 focus:border-primary-500 transition-colors"
+                        min={0}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-300">Status</label>
+                      <label className="flex items-center gap-3 h-[46px] px-4 bg-white/5 border border-white/10 rounded-lg cursor-pointer hover:bg-white/10 transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={selectedCourse.active !== false}
+                          onChange={(e) => updateCourseField(selectedCourse.id, 'active', e.target.checked)}
+                          className="w-4 h-4 rounded border-white/20 bg-white/5 text-primary-600 focus:ring-primary-500 focus:ring-offset-0"
+                        />
+                        <span className="text-sm text-gray-300">Active</span>
+                      </label>
+                    </div>
                   </div>
-                )}
-                <div className="text-left">
-                  <h3 className="text-lg font-semibold text-white">{course.title || 'Untitled Course'}</h3>
-                  <p className="text-sm text-gray-400">{course.level} • {course.duration}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                {course.active === false && (
-                  <span className="px-2 py-1 text-xs bg-gray-600/50 text-gray-300 rounded">Inactive</span>
-                )}
-                <motion.svg
-                  className="w-5 h-5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  animate={{ rotate: expandedCourses[course.id] ? 180 : 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </motion.svg>
+            </div>
+
+            {/* ═══════════════════════════════════════════════════════════════
+                SECTION 2: Course Details - Text Content
+            ═══════════════════════════════════════════════════════════════ */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                </svg>
+                Course Details
+              </h4>
+
+              <div className="grid grid-cols-12 gap-4">
+                <ValidatedTextarea
+                  wrapperClassName="col-span-12"
+                  label="Description"
+                  value={selectedCourse.description || ''}
+                  onChange={(value) => updateCourseField(selectedCourse.id, 'description', value)}
+                  maxLength={CHAR_LIMITS.description}
+                  placeholder="Learn essential tools and techniques for process improvement..."
+                  rows={3}
+                />
+
+                <ValidatedTextarea
+                  wrapperClassName="col-span-12 lg:col-span-6"
+                  label="Ideal For"
+                  value={selectedCourse.idealFor || ''}
+                  onChange={(value) => updateCourseField(selectedCourse.id, 'idealFor', value)}
+                  maxLength={CHAR_LIMITS.idealFor}
+                  placeholder="Project managers, team leaders..."
+                  rows={2}
+                />
+
+                <ValidatedTextarea
+                  wrapperClassName="col-span-12 lg:col-span-6"
+                  label="Learning Outcome"
+                  value={selectedCourse.outcome || ''}
+                  onChange={(value) => updateCourseField(selectedCourse.id, 'outcome', value)}
+                  maxLength={CHAR_LIMITS.outcome}
+                  placeholder="Upon completion, participants will..."
+                  rows={2}
+                />
               </div>
-            </button>
+            </div>
 
-            {/* Accordion Content */}
-            <AnimatePresence>
-              {expandedCourses[course.id] && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden"
-                >
-                  <div className="px-6 pb-6 border-t border-white/10 pt-6">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* Left Column */}
-                      <div className="space-y-4">
-                        {/* Course Image */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">Course Image</label>
-                          <MediaUploader
-                            value={course.image}
-                            onUpload={(url) => updateCourseField(course.id, 'image', url)}
-                            storagePath={`courses/${course.id}`}
-                          />
-                        </div>
+            {/* ═══════════════════════════════════════════════════════════════
+                SECTION 3: Sample Certificate - Document Card
+            ═══════════════════════════════════════════════════════════════ */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Certification
+              </h4>
 
-                        {/* Title */}
-                        <ValidatedInput
-                          label="Course Title"
-                          value={course.title || ''}
-                          onChange={(value) => updateCourseField(course.id, 'title', value)}
-                          maxLength={CHAR_LIMITS.title}
-                          placeholder="Lean Six Sigma Green Belt"
-                          required
-                        />
+              <div className="grid grid-cols-12 gap-4">
+                <div className="col-span-12 lg:col-span-8">
+                  <DocumentAssetCard
+                    value={selectedCourse.sampleCertificateUrl || ''}
+                    onUpload={(url) => updateCourseField(selectedCourse.id, 'sampleCertificateUrl', url)}
+                    storagePath={`courses/${selectedCourse.id}/certificate`}
+                    label="Sample Certificate"
+                  />
+                </div>
 
-                        {/* Level & Duration */}
-                        <div className="grid grid-cols-2 gap-4">
-                          <ValidatedInput
-                            label="Level"
-                            value={course.level || ''}
-                            onChange={(value) => updateCourseField(course.id, 'level', value)}
-                            maxLength={CHAR_LIMITS.level}
-                            placeholder="Intermediate"
-                          />
-                          <ValidatedInput
-                            label="Duration"
-                            value={course.duration || ''}
-                            onChange={(value) => updateCourseField(course.id, 'duration', value)}
-                            maxLength={CHAR_LIMITS.duration}
-                            placeholder="3-4 Days"
-                          />
-                        </div>
-
-                        {/* Order & Active */}
-                        <div className="flex items-center gap-6">
-                          <div className="flex items-center gap-3">
-                            <label className="text-sm text-gray-400">Order:</label>
-                            <input
-                              type="number"
-                              value={course.order || 0}
-                              onChange={(e) => updateCourseField(course.id, 'order', parseInt(e.target.value) || 0)}
-                              className="w-20 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-primary-500"
-                              min={0}
-                            />
-                          </div>
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={course.active !== false}
-                              onChange={(e) => updateCourseField(course.id, 'active', e.target.checked)}
-                              className="w-4 h-4 rounded border-white/20 bg-white/5 text-primary-600 focus:ring-primary-500 focus:ring-offset-0"
-                            />
-                            <span className="text-sm text-gray-300">Active</span>
-                          </label>
-                        </div>
-                      </div>
-
-                      {/* Right Column */}
-                      <div className="space-y-4">
-                        {/* Description */}
-                        <ValidatedTextarea
-                          label="Description"
-                          value={course.description || ''}
-                          onChange={(value) => updateCourseField(course.id, 'description', value)}
-                          maxLength={CHAR_LIMITS.description}
-                          placeholder="Learn essential tools and techniques for process improvement..."
-                          rows={3}
-                        />
-
-                        {/* Ideal For */}
-                        <ValidatedTextarea
-                          label="Ideal For"
-                          value={course.idealFor || ''}
-                          onChange={(value) => updateCourseField(course.id, 'idealFor', value)}
-                          maxLength={CHAR_LIMITS.idealFor}
-                          placeholder="Project managers, team leaders, quality professionals..."
-                          rows={2}
-                        />
-
-                        {/* Outcome */}
-                        <ValidatedTextarea
-                          label="Learning Outcome"
-                          value={course.outcome || ''}
-                          onChange={(value) => updateCourseField(course.id, 'outcome', value)}
-                          maxLength={CHAR_LIMITS.outcome}
-                          placeholder="Upon completion, participants will be able to..."
-                          rows={2}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Delete Button */}
-                    <div className="mt-6 pt-6 border-t border-white/10 flex justify-end">
-                      <button
-                        onClick={() => handleDeleteCourse(course.id)}
-                        disabled={deleteMutation.isPending}
-                        className="flex items-center gap-2 px-4 py-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                {/* Certificate Info Panel */}
+                <div className="col-span-12 lg:col-span-4">
+                  <div className="bg-gradient-to-br from-amber-900/20 to-amber-800/10 border border-amber-500/20 rounded-xl p-4 h-full">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 bg-amber-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        {deleteMutation.isPending ? 'Deleting...' : 'Delete Course'}
-                      </button>
+                      </div>
+                      <div>
+                        <h5 className="text-sm font-medium text-amber-300 mb-1">Certificate Preview</h5>
+                        <p className="text-xs text-amber-200/60 leading-relaxed">
+                          This certificate will be shown to users when they click "View Certificate" on the course card.
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        ))}
-      </div>
+                </div>
+              </div>
+            </div>
 
-      {/* Empty State */}
-      {coursesArray.length === 0 && !isLoading && (
-        <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-8 text-center">
-          <div className="w-16 h-16 bg-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
+            {/* ═══════════════════════════════════════════════════════════════
+                DANGER ZONE: Delete Course
+            ═══════════════════════════════════════════════════════════════ */}
+            <div className="pt-6 border-t border-white/10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-400">Danger Zone</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Permanently delete this course</p>
+                </div>
+                <button
+                  onClick={() => handleDeleteCourse(selectedCourse.id)}
+                  disabled={deleteMutation.isPending}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 hover:border-red-500/30 rounded-lg transition-all disabled:opacity-50"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  <span className="text-sm font-medium">
+                    {deleteMutation.isPending ? 'Deleting...' : 'Delete Course'}
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
-          <h2 className="text-xl font-semibold text-white mb-2">No Courses Found</h2>
-          <p className="text-gray-400 mb-6">Get started by adding your first course.</p>
-          <button
-            onClick={addCourse}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Add Your First Course
-          </button>
-        </div>
-      )}
+        )}
+      </MasterDetailLayout>
 
       {/* Save Bar */}
       <SaveBar

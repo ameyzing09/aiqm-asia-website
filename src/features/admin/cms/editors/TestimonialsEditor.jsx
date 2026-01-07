@@ -6,7 +6,7 @@ import { ValidatedInput } from '../components/ValidatedInput'
 import { ValidatedTextarea } from '../components/ValidatedTextarea'
 import { FormCard } from '../components/FormCard'
 import { SaveBar } from '../components/SaveBar'
-import { MediaUploader } from '../components/MediaUploader'
+import { ProfileAssetCard } from '../components/ProfileAssetCard'
 import { useToast, getErrorMessage } from '../hooks/useToast'
 
 // Character limits for testimonials
@@ -243,21 +243,21 @@ export function TestimonialsEditor() {
               </span>
             )}
 
-            <div className="space-y-4">
-              {/* Author Photo & Info Row */}
-              <div className="flex gap-4">
-                {/* Photo Uploader */}
-                <div className="flex-shrink-0">
-                  <MediaUploader
+            <div className="space-y-5">
+              {/* 12-Column Grid Layout */}
+              <div className="grid grid-cols-12 gap-4">
+                {/* Photo - col-span-4 on desktop */}
+                <div className="col-span-12 lg:col-span-4">
+                  <ProfileAssetCard
                     value={testimonial.image}
-                    onUpload={(url) => updateField(testimonial.id, 'image', url)}
+                    onChange={(url) => updateField(testimonial.id, 'image', url)}
                     storagePath={`testimonials/${testimonial.id}`}
-                    compact
+                    label="Photo"
                   />
                 </div>
 
-                {/* Author Details */}
-                <div className="flex-1 space-y-3">
+                {/* Name & Role/Company - col-span-8 on desktop */}
+                <div className="col-span-12 lg:col-span-8 space-y-4">
                   <ValidatedInput
                     label="Author Name"
                     value={testimonial.author || ''}
@@ -266,8 +266,9 @@ export function TestimonialsEditor() {
                     placeholder="John Smith"
                     required
                   />
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-12 gap-3">
                     <ValidatedInput
+                      wrapperClassName="col-span-12 lg:col-span-7"
                       label="Role"
                       value={testimonial.role || ''}
                       onChange={(value) => updateField(testimonial.id, 'role', value)}
@@ -275,6 +276,7 @@ export function TestimonialsEditor() {
                       placeholder="Quality Manager"
                     />
                     <ValidatedInput
+                      wrapperClassName="col-span-12 lg:col-span-5"
                       label="Company"
                       value={testimonial.company || ''}
                       onChange={(value) => updateField(testimonial.id, 'company', value)}
@@ -283,64 +285,61 @@ export function TestimonialsEditor() {
                     />
                   </div>
                 </div>
+
+                {/* Quote - Full width */}
+                <ValidatedTextarea
+                  wrapperClassName="col-span-12"
+                  label="Quote"
+                  value={testimonial.quote || ''}
+                  onChange={(value) => updateField(testimonial.id, 'quote', value)}
+                  maxLength={CHAR_LIMITS.quote}
+                  placeholder="The training transformed our approach to quality management..."
+                  rows={3}
+                  required
+                />
               </div>
 
-              {/* Quote */}
-              <ValidatedTextarea
-                label="Quote"
-                value={testimonial.quote || ''}
-                onChange={(value) => updateField(testimonial.id, 'quote', value)}
-                maxLength={CHAR_LIMITS.quote}
-                placeholder="The training transformed our approach to quality management..."
-                rows={3}
-                required
-              />
-
-              {/* Rating & Controls */}
+              {/* Footer Controls */}
               <div className="flex items-center justify-between pt-4 border-t border-white/10">
-                <div className="flex items-center gap-4">
-                  {/* Rating */}
-                  <div className="flex items-center gap-2">
-                    <label className="text-sm text-gray-400">Rating:</label>
-                    <StarRating
-                      value={testimonial.rating || 5}
-                      onChange={(value) => updateField(testimonial.id, 'rating', value)}
-                    />
-                  </div>
+                {/* Rating */}
+                <div className="flex items-center gap-2">
+                  <label className="text-sm text-gray-400">Rating:</label>
+                  <StarRating
+                    value={testimonial.rating || 5}
+                    onChange={(value) => updateField(testimonial.id, 'rating', value)}
+                  />
                 </div>
 
-                <div className="flex items-center gap-4">
-                  {/* Order */}
+                {/* Right Controls */}
+                <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2">
-                    <label className="text-sm text-gray-400">Order:</label>
+                    <label className="text-xs text-gray-500">#</label>
                     <input
                       type="number"
                       value={testimonial.order || 0}
                       onChange={(e) => updateField(testimonial.id, 'order', parseInt(e.target.value) || 0)}
-                      className="w-16 px-2 py-1 bg-white/5 border border-white/10 rounded text-white text-sm focus:outline-none focus:border-primary-500"
+                      className="w-14 px-2 py-1 bg-white/5 border border-white/10 rounded text-white text-sm text-center focus:outline-none focus:border-primary-500"
                       min={0}
                     />
                   </div>
 
-                  {/* Active Toggle */}
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex items-center gap-1.5 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={testimonial.active !== false}
                       onChange={(e) => updateField(testimonial.id, 'active', e.target.checked)}
                       className="w-4 h-4 rounded border-white/20 bg-white/5 text-primary-600 focus:ring-primary-500 focus:ring-offset-0"
                     />
-                    <span className="text-sm text-gray-300">Active</span>
+                    <span className="text-xs text-gray-400">Active</span>
                   </label>
 
-                  {/* Delete */}
                   <button
                     onClick={() => handleDelete(testimonial.id)}
                     disabled={deleteMutation.isPending}
-                    className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
-                    title="Delete testimonial"
+                    className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors disabled:opacity-50"
+                    title="Delete"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
