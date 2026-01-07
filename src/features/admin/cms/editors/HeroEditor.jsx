@@ -6,7 +6,7 @@ import { ValidatedInput } from '../components/ValidatedInput'
 import { ValidatedTextarea } from '../components/ValidatedTextarea'
 import { FormCard } from '../components/FormCard'
 import { SaveBar } from '../components/SaveBar'
-import { MediaUploader } from '../components/MediaUploader'
+import { ImageAssetCard } from '../components/ImageAssetCard'
 import { useToast, getErrorMessage } from '../hooks/useToast'
 
 // Character limits for hero sections
@@ -210,10 +210,11 @@ export function HeroEditor() {
             title={`${currentPageConfig?.label} Hero Content`}
             description={currentPageConfig?.description}
           >
-            <div className="space-y-4">
+            <div className="grid grid-cols-12 gap-4">
               {/* Badge (optional) */}
               {activePage !== 'home' && (
                 <ValidatedInput
+                  wrapperClassName="col-span-12 lg:col-span-6"
                   label="Badge Text"
                   value={formData.badge || ''}
                   onChange={(value) => updateField('badge', value)}
@@ -224,6 +225,7 @@ export function HeroEditor() {
 
               {/* Headline */}
               <ValidatedInput
+                wrapperClassName="col-span-12 lg:col-span-6"
                 label="Headline"
                 value={formData.headline || ''}
                 onChange={(value) => updateField('headline', value)}
@@ -234,6 +236,7 @@ export function HeroEditor() {
 
               {/* Highlight Text */}
               <ValidatedInput
+                wrapperClassName="col-span-12 lg:col-span-6"
                 label="Highlight Text"
                 value={formData.highlightText || ''}
                 onChange={(value) => updateField('highlightText', value)}
@@ -243,6 +246,7 @@ export function HeroEditor() {
 
               {/* Subheadline */}
               <ValidatedTextarea
+                wrapperClassName="col-span-12"
                 label={activePage === 'home' ? "Subheadline (leave empty to auto-build from Stats)" : "Subheadline"}
                 value={formData.subheadline || ''}
                 onChange={(value) => updateField('subheadline', value)}
@@ -261,9 +265,9 @@ export function HeroEditor() {
             title="Call-to-Action Buttons"
             description="Configure the primary and secondary action buttons"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-12 gap-4">
               {/* Primary CTA */}
-              <div className="space-y-4">
+              <div className="col-span-12 lg:col-span-6 space-y-4">
                 <h4 className="text-sm font-medium text-white">Primary Button</h4>
                 <ValidatedInput
                   label="Button Text"
@@ -283,7 +287,7 @@ export function HeroEditor() {
               </div>
 
               {/* Secondary CTA */}
-              <div className="space-y-4">
+              <div className="col-span-12 lg:col-span-6 space-y-4">
                 <h4 className="text-sm font-medium text-white">Secondary Button</h4>
                 <ValidatedInput
                   label="Button Text"
@@ -308,14 +312,25 @@ export function HeroEditor() {
           {(activePage === 'about' || activePage === 'consultancy') && (
             <FormCard
               title="Hero Image"
-              description="Upload an image for the hero section (4:3 aspect ratio recommended)"
+              description="Upload an image for the hero section (16:9 aspect ratio recommended)"
             >
-              <MediaUploader
-                value={formData.heroImage || ''}
-                onUpload={(url) => updateField('heroImage', url)}
-                storagePath={`heroes/${activePage}`}
-                label="Hero Image"
-              />
+              <div className="grid grid-cols-12 gap-4">
+                <div className="col-span-12 lg:col-span-6">
+                  <ImageAssetCard
+                    value={formData.heroImage || ''}
+                    onChange={(url) => updateField('heroImage', url)}
+                    storagePath={`heroes/${activePage}`}
+                    label="Hero Image"
+                    aspectRatio="aspect-video"
+                    maxSize="max-w-md"
+                    placeholderIcon={
+                      <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    }
+                  />
+                </div>
+              </div>
             </FormCard>
           )}
 

@@ -117,7 +117,9 @@ export function ConsultancyCTA() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             <Button
-              href="#contact"
+              href={global?.enquiryLink || '#contact'}
+              target={global?.enquiryLink ? '_blank' : undefined}
+              rel={global?.enquiryLink ? 'noopener noreferrer' : undefined}
               variant="secondary"
               size="lg"
               className="bg-white hover:bg-gray-100 text-primary-700 border-none shadow-xl"

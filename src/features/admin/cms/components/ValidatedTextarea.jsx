@@ -20,6 +20,7 @@ export function ValidatedTextarea({
   autoResize = false,
   error,
   className = '',
+  wrapperClassName = '', // For grid column control (e.g., 'col-span-12')
 }) {
   const textareaRef = useRef(null)
   const strValue = String(value)
@@ -60,6 +61,7 @@ export function ValidatedTextarea({
   }, [value, autoResize])
 
   return (
+    <div className={wrapperClassName}>
     <div className={`space-y-2 ${className}`}>
       {label && (
         <label className="block text-sm font-medium text-gray-300">
@@ -101,6 +103,7 @@ export function ValidatedTextarea({
           </span>
         )}
       </div>
+    </div>
     </div>
   )
 }

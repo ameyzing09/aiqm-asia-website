@@ -118,9 +118,10 @@ export function StatsEditor() {
             title={stat.label || 'Stat'}
             description={`ID: ${stat.id}`}
           >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-12 gap-4">
               {/* Value */}
               <ValidatedInput
+                wrapperClassName="col-span-12 md:col-span-3"
                 label="Value"
                 value={String(stat.value || '')}
                 onChange={(value) => updateStatField(stat.id, 'value', value)}
@@ -130,6 +131,7 @@ export function StatsEditor() {
 
               {/* Suffix */}
               <ValidatedInput
+                wrapperClassName="col-span-6 md:col-span-2"
                 label="Suffix"
                 value={stat.suffix || ''}
                 onChange={(value) => updateStatField(stat.id, 'suffix', value)}
@@ -139,6 +141,7 @@ export function StatsEditor() {
 
               {/* Label */}
               <ValidatedInput
+                wrapperClassName="col-span-12 md:col-span-5"
                 label="Label"
                 value={stat.label || ''}
                 onChange={(value) => updateStatField(stat.id, 'label', value)}
@@ -146,17 +149,15 @@ export function StatsEditor() {
                 placeholder="Professionals Trained"
                 required
               />
-            </div>
 
-            {/* Order field (optional) */}
-            <div className="mt-4 pt-4 border-t border-white/10">
-              <div className="flex items-center gap-4">
-                <label className="text-sm text-gray-400">Display Order:</label>
+              {/* Order field */}
+              <div className="col-span-6 md:col-span-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">Order</label>
                 <input
                   type="number"
                   value={stat.order || 0}
                   onChange={(e) => updateStatField(stat.id, 'order', parseInt(e.target.value) || 0)}
-                  className="w-20 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-primary-500"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-primary-500/20 focus:border-primary-500 transition-colors duration-200"
                   min={0}
                 />
               </div>

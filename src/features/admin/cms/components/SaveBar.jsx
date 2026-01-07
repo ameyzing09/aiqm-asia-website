@@ -1,10 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion'
 
 /**
- * Floating save bar that appears when form has unsaved changes
+ * Save bar that appears when form has unsaved changes
  *
  * Behavior:
- * - Fixed at bottom of viewport
+ * - Fixed at bottom of viewport, offset for sidebar
  * - Only visible when isDirty={true}
  * - Animated entry/exit via framer-motion
  * - Save button disabled when hasErrors={true}
@@ -29,7 +29,7 @@ export function SaveBar({
           className="fixed bottom-0 left-0 md:left-64 right-0 z-50"
         >
           {/* Gradient fade at top */}
-          <div className="h-8 bg-gradient-to-t from-gray-900/95 to-transparent" />
+          <div className="h-6 bg-gradient-to-t from-gray-900 to-transparent" />
 
           {/* Main bar */}
           <div className="bg-gray-900/95 backdrop-blur-xl border-t border-white/10 px-4 py-4">

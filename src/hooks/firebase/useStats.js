@@ -20,7 +20,10 @@ export const useStats = () => {
       .map((item) => ({
         id: item.id,
         label: item.label || '',
-        value: Number(item.value) || 0,
+        // Handle string values like "95,000" - remove commas before converting
+        value: typeof item.value === 'string'
+          ? Number(item.value.replace(/,/g, '')) || item.value
+          : Number(item.value) || 0,
         suffix: item.suffix || '',
         order: item.order ?? 999,
       }))

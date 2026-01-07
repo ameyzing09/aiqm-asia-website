@@ -20,7 +20,9 @@ export function MediaUploader({
   maxSize = 5 * 1024 * 1024, // 5MB default
   label,
   className = '',
-  compact = false, // For small avatar/profile photo uploads
+  wrapperClassName = '', // For grid column control (e.g., 'col-span-4')
+  compact = false, // For small circular avatar/profile photo uploads
+  buttonOnly = false, // For inline button-only mode (no preview, just buttons)
 }) {
   const [isDragging, setIsDragging] = useState(false)
   const [localError, setLocalError] = useState(null)
@@ -101,6 +103,7 @@ export function MediaUploader({
   }, [onUpload, reset])
 
   return (
+    <div className={wrapperClassName}>
     <div className={`space-y-2 ${className}`}>
       {label && (
         <label className="block text-sm font-medium text-gray-300">
@@ -130,15 +133,39 @@ export function MediaUploader({
 
         {/* State: Has image preview */}
         {value && !uploading && (
-          <div className={`relative ${compact ? 'w-20 h-20' : 'aspect-video'}`}>
-            <img
-              src={value}
-              alt="Preview"
-              className={`w-full h-full object-cover ${compact ? 'rounded-full' : 'rounded-xl'}`}
-            />
-            {/* Overlay with actions */}
-            <div className={`absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center ${compact ? 'rounded-full' : 'rounded-xl'}`}>
-              {compact ? (
+          buttonOnly ? (
+            // Button-only mode: Just buttons, no preview (preview shown externally)
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleClick}
+                className="px-3 py-1.5 bg-primary-600/20 hover:bg-primary-600/30 text-primary-400 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                Change
+              </button>
+              <button
+                type="button"
+                onClick={handleRemove}
+                className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Remove
+              </button>
+            </div>
+          ) : compact ? (
+            // Compact mode: Circular avatar with hover overlay
+            <div className="relative w-20 h-20">
+              <img
+                src={value}
+                alt="Preview"
+                className="w-full h-full object-cover rounded-full"
+              />
+              <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
                 <button
                   type="button"
                   onClick={handleClick}
@@ -150,7 +177,18 @@ export function MediaUploader({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                 </button>
-              ) : (
+              </div>
+            </div>
+          ) : (
+            // Full mode: Image preview with overlay
+            <div className="relative aspect-video">
+              <img
+                src={value}
+                alt="Preview"
+                className="w-full h-full object-cover rounded-xl"
+              />
+              {/* Overlay with actions */}
+              <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl">
                 <div className="flex gap-3">
                   <button
                     type="button"
@@ -167,14 +205,25 @@ export function MediaUploader({
                     Remove
                   </button>
                 </div>
-              )}
+              </div>
             </div>
-          </div>
+          )
         )}
 
         {/* State: Uploading */}
         {uploading && (
-          compact ? (
+          buttonOnly ? (
+            // Button-only mode: Inline loading
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full"
+              />
+              <span className="text-xs text-gray-400">Uploading... {progress}%</span>
+            </div>
+          ) : compact ? (
+            // Compact mode: Circular loading
             <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-full flex items-center justify-center">
               <motion.div
                 animate={{ rotate: 360 }}
@@ -209,7 +258,28 @@ export function MediaUploader({
 
         {/* State: Empty / Drop zone */}
         {!value && !uploading && (
-          compact ? (
+          buttonOnly ? (
+            // Button-only mode: Upload button only
+            <button
+              type="button"
+              onClick={handleClick}
+              className={`
+                px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5
+                ${isDragging
+                  ? 'bg-primary-600/30 text-primary-400'
+                  : error
+                  ? 'bg-red-500/10 text-red-400'
+                  : 'bg-primary-600/20 hover:bg-primary-600/30 text-primary-400'
+                }
+              `}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              Upload
+            </button>
+          ) : compact ? (
+            // Compact mode: Circular dropzone
             <div
               className={`
                 w-20 h-20 border-2 border-dashed rounded-full
@@ -291,6 +361,7 @@ export function MediaUploader({
           {error}
         </p>
       )}
+    </div>
     </div>
   )
 }

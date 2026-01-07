@@ -71,7 +71,8 @@ export const useCourses = () => {
             price: course.priceDisplay || '',
             order: course.order ?? 999,
             featured: course.featured ?? false,
-            active: course.active !== false // Default to true if not specified
+            active: course.active !== false, // Default to true if not specified
+            sampleCertificateUrl: course.sampleCertificateUrl || ''
           }
         })
         .filter(course => course.active)

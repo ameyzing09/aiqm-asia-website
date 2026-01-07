@@ -44,6 +44,8 @@ export const useGlobal = () => {
       },
       socialLinks: socialLinks.sort((a, b) => a.order - b.order), // SORTED ARRAY
       accreditations: data.accreditations || {},
+      enquiryLink: data?.enquiryLink || '',
+      features: data?.features || { enableThemeSwitcher: false },
     }
   })
 }

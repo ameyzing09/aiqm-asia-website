@@ -36,6 +36,10 @@ const siteContentData = {
       iassc: "IASSC",
       asq: "ASQ",
       cssc: "CSSC"
+    },
+    enquiryLink: "https://forms.gle/sesk7HG3vheSZYQt5",
+    features: {
+      enableThemeSwitcher: false
     }
   },
 

@@ -1,7 +1,11 @@
+import { useState } from 'react'
 import { Card } from '../../components/Card'
 import { Button } from '../../components/Button'
+import { useGlobal } from '../../hooks/firebase'
 
 export function DetailedCourseCard({ course }) {
+  const { data: global } = useGlobal()
+  const [showCertificate, setShowCertificate] = useState(false)
   return (
     <Card className="flex flex-col w-full">
       {/* Header with gradient */}
@@ -57,6 +61,18 @@ export function DetailedCourseCard({ course }) {
         <div>
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 uppercase font-semibold">Certification</p>
           <p className="text-sm font-medium text-primary-600 dark:text-primary-400">{course.certification}</p>
+          {course.sampleCertificateUrl && (
+            <button
+              onClick={() => setShowCertificate(true)}
+              className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-accent-600 dark:text-accent-400 hover:text-accent-700 dark:hover:text-accent-300 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              View Sample Certificate
+            </button>
+          )}
         </div>
 
         {/* Key Topics */}
@@ -77,10 +93,68 @@ export function DetailedCourseCard({ course }) {
         </div>
 
         {/* Enroll Button */}
-        <Button href="#enroll" variant="accent" size="md" className="w-full mt-auto">
+        <Button
+          href={global?.enquiryLink || '#enroll'}
+          target={global?.enquiryLink ? '_blank' : undefined}
+          rel={global?.enquiryLink ? 'noopener noreferrer' : undefined}
+          variant="accent"
+          size="md"
+          className="w-full mt-auto"
+        >
           Enroll Now
         </Button>
       </div>
+
+      {/* Certificate Modal */}
+      {showCertificate && course.sampleCertificateUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          onClick={() => setShowCertificate(false)}
+        >
+          <div
+            className="relative max-w-4xl w-full max-h-[90vh] bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Sample Certificate</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{course.title}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href={course.sampleCertificateUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  title="Open in new tab"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+                <button
+                  onClick={() => setShowCertificate(false)}
+                  className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Certificate Image */}
+            <div className="p-4 overflow-auto max-h-[calc(90vh-80px)]">
+              <img
+                src={course.sampleCertificateUrl}
+                alt={`${course.title} Sample Certificate`}
+                className="w-full h-auto rounded-lg"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </Card>
   )
 }
