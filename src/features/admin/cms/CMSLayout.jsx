@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useAuth } from '../../../hooks/useAuth'
 import { Sidebar } from './components/Sidebar'
@@ -6,30 +7,50 @@ import { ToastContainer } from './components/Toast'
 
 export function CMSLayout() {
   const { user, logout } = useAuth()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
     <ToastProvider>
-      <div className="min-h-screen bg-gray-950 flex">
+      {/* Root wrapper with overflow-x-hidden to prevent horizontal scroll */}
+      <div className="min-h-screen bg-gray-950 overflow-x-hidden w-full max-w-full box-border">
         {/* Decorative gradient orbs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary-600/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-accent-600/10 rounded-full blur-3xl" />
-      </div>
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary-600/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-accent-600/10 rounded-full blur-3xl" />
+        </div>
 
-      {/* Fixed Sidebar */}
-      <aside className="w-64 fixed left-0 top-0 h-screen bg-gray-900/50 backdrop-blur-xl border-r border-white/10 z-40">
-        <Sidebar />
-      </aside>
+        {/* Mobile Backdrop */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
 
-      {/* Main Content Area */}
-      <main className="ml-64 flex-1 min-h-screen relative">
-        {/* Sticky Header */}
-        <header className="sticky top-0 z-30 bg-gray-900/80 backdrop-blur-xl border-b border-white/10">
-          <div className="flex items-center justify-between px-6 lg:px-8 h-16">
-            {/* Page title placeholder - can be set by child routes */}
-            <div className="flex items-center gap-4">
-              <h2 className="text-lg font-semibold text-white">Content Management</h2>
-            </div>
+        {/* Sidebar - slide-over on mobile, fixed on desktop */}
+        <aside className={`w-64 fixed left-0 top-0 h-screen bg-gray-900/95 backdrop-blur-xl border-r border-white/10 z-50 transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+          <Sidebar onClose={() => setSidebarOpen(false)} />
+        </aside>
+
+        {/* Main Content Area - full width on mobile, offset on desktop */}
+        <main className="min-h-screen lg:ml-64">
+          {/* Sticky Header */}
+          <header className="sticky top-0 z-30 bg-gray-900/80 backdrop-blur-xl border-b border-white/10">
+            <div className="flex items-center justify-between px-4 lg:px-8 h-16">
+              {/* Hamburger + Page title */}
+              <div className="flex items-center gap-3">
+                {/* Hamburger button - mobile only */}
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="lg:hidden p-2 -ml-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                  aria-label="Open menu"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
+                <h2 className="text-lg font-semibold text-white">Content Management</h2>
+              </div>
 
             {/* User info & logout */}
             <div className="flex items-center gap-4">
@@ -68,8 +89,8 @@ export function CMSLayout() {
           </div>
         </header>
 
-        {/* Content */}
-        <div className="p-6 lg:p-8">
+        {/* Content - overflow-x-hidden prevents horizontal scroll */}
+        <div className="p-4 lg:p-8 overflow-x-hidden w-full max-w-full box-border">
           <Outlet />
         </div>
       </main>

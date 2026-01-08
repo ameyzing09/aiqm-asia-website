@@ -26,7 +26,7 @@ export function SaveBar({
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="fixed bottom-0 left-0 md:left-64 right-0 z-50"
+          className="fixed bottom-0 left-0 lg:left-64 right-0 z-50"
         >
           {/* Gradient fade at top */}
           <div className="h-6 bg-gradient-to-t from-gray-900 to-transparent" />

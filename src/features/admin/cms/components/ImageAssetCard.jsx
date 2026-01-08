@@ -20,7 +20,7 @@ export function ImageAssetCard({
   maxSize = 5 * 1024 * 1024, // 5MB default
   label,
   aspectRatio = 'aspect-video',
-  maxSize: containerMaxSize = 'max-w-sm',
+  containerMaxWidth = 'w-full lg:max-w-sm', // Responsive: full width on mobile
   placeholderIcon,
   className = '',
   wrapperClassName = '',
@@ -112,7 +112,7 @@ export function ImageAssetCard({
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          className={`relative ${containerMaxSize}`}
+          className={`relative ${containerMaxWidth}`}
         >
           {/* Hidden file input */}
           <input
