@@ -48,12 +48,9 @@ export function MasterDetailLayout({
   const selectedItem = items.find(item => item.id === selectedId)
 
   return (
-    <div className={`grid grid-cols-12 gap-6 ${className}`}>
+    <div className={`grid grid-cols-12 gap-4 lg:gap-6 overflow-hidden w-full max-w-full box-border ${className}`}>
       {/* Master List Panel */}
-      <div className={`
-        col-span-12 lg:col-span-4
-        ${mobileView === 'detail' ? 'hidden lg:block' : 'block'}
-      `}>
+      <div className={`col-span-12 lg:col-span-4 ${mobileView === 'detail' ? 'hidden lg:block' : 'block'}`}>
         <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl overflow-hidden h-full">
           {/* List Header */}
           <div className="p-4 border-b border-white/10 flex items-center justify-between">
@@ -140,10 +137,7 @@ export function MasterDetailLayout({
       </div>
 
       {/* Detail Panel */}
-      <div className={`
-        col-span-12 lg:col-span-8
-        ${mobileView === 'list' ? 'hidden lg:block' : 'block'}
-      `}>
+      <div className={`col-span-12 lg:col-span-8 ${mobileView === 'list' ? 'hidden lg:block' : 'block'}`}>
         <AnimatePresence mode="wait">
           {selectedId ? (
             <motion.div
