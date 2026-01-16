@@ -1,0 +1,21 @@
+{
+  "rules": {
+    "admins": {
+      // Only admins can read the admin list
+      ".read": "auth != null && root.child('admins').child(auth.uid).exists()",
+      // Only existing admins can modify the admin list
+      ".write": "auth != null && root.child('admins').child(auth.uid).exists()"
+    },
+
+    "siteContent": {
+      // Public read access - website needs to fetch content
+      ".read": true,
+      // Write access only for admins
+      ".write": "auth != null && root.child('admins').child(auth.uid).exists()"
+    },
+
+    // Block access to all other paths by default
+    ".read": false,
+    ".write": false
+  }
+}

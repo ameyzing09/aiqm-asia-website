@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ref, get, update } from 'firebase/database'
+import { useQuery } from '@tanstack/react-query'
+import { ref, get } from 'firebase/database'
 import { db } from '../../../../services/firebase'
 import { ValidatedInput } from '../components/ValidatedInput'
 import { ValidatedTextarea } from '../components/ValidatedTextarea'
 import { FormCard } from '../components/FormCard'
 import { SaveBar } from '../components/SaveBar'
 import { useToast, getErrorMessage } from '../hooks/useToast'
+import { useAuditedSave, getMetadataTimestamp } from '../hooks/useAuditedSave'
 
 // Available CTA banner pages
 const PAGES = [
@@ -37,11 +38,22 @@ const DEFAULT_DATA = {
 }
 
 export function CTABannersEditor() {
-  const queryClient = useQueryClient()
   const { success, error } = useToast()
   const [activePage, setActivePage] = useState('courses')
   const [formData, setFormData] = useState({})
   const [initialData, setInitialData] = useState({})
+  const [initialTimestamp, setInitialTimestamp] = useState(null)
+
+  // Audited save hook
+  const { save, forceSave, isSaving, isConflict } = useAuditedSave('ctaBanners', {
+    onSuccess: () => success('CTA banners saved successfully!'),
+    onError: (err) => {
+      if (err.code !== 'CONFLICT') {
+        error(getErrorMessage(err))
+      }
+    },
+    invalidateKeys: ['ctaBanners']
+  })
 
   // Fetch CTA banners data
   const { data, isLoading } = useQuery({
@@ -66,19 +78,9 @@ export function CTABannersEditor() {
       })
       setFormData(normalized)
       setInitialData(normalized)
+      setInitialTimestamp(getMetadataTimestamp(data))
     }
   }, [data])
-
-  // Save mutation
-  const saveMutation = useMutation({
-    mutationFn: async (newData) => {
-      await update(ref(db, 'siteContent/ctaBanners'), newData)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['siteContent', 'ctaBanners'] })
-      queryClient.invalidateQueries({ queryKey: ['ctaBanners'] })
-    },
-  })
 
   // Check if dirty
   const isDirty = useMemo(() => {
@@ -116,15 +118,25 @@ export function CTABannersEditor() {
   // Get current page data
   const currentData = formData[activePage] || DEFAULT_DATA
 
-  // Save/Discard
+  // Handle save with optimistic locking
   const handleSave = async () => {
     try {
-      await saveMutation.mutateAsync(formData)
+      await save(formData, initialTimestamp)
       setInitialData(formData)
-      success('CTA banners saved successfully!')
     } catch (err) {
-      error(getErrorMessage(err))
-      console.error('Failed to save:', err)
+      if (err.code !== 'CONFLICT') {
+        console.error('Failed to save:', err)
+      }
+    }
+  }
+
+  // Handle force save (overwrite conflicts)
+  const handleForceSave = async () => {
+    try {
+      await forceSave(formData)
+      setInitialData(formData)
+    } catch (err) {
+      console.error('Failed to force save:', err)
     }
   }
 
@@ -315,7 +327,11 @@ export function CTABannersEditor() {
         hasErrors={hasErrors}
         onSave={handleSave}
         onDiscard={handleDiscard}
-        isSaving={saveMutation.isPending}
+        isSaving={isSaving}
+        lastEditedBy={data?._metadata?.updatedBy}
+        lastEditedAt={data?._metadata?.updatedAt}
+        isConflict={isConflict}
+        onForceSave={handleForceSave}
       />
     </div>
   )

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ref, get, update, remove } from 'firebase/database'
+import { ref, get, remove } from 'firebase/database'
 import { db } from '../../../../services/firebase'
 import { ValidatedInput } from '../components/ValidatedInput'
 import { ValidatedTextarea } from '../components/ValidatedTextarea'
@@ -8,6 +8,7 @@ import { FormCard } from '../components/FormCard'
 import { SaveBar } from '../components/SaveBar'
 import { MasterDetailLayout } from '../components/MasterDetailLayout'
 import { useToast, getErrorMessage } from '../hooks/useToast'
+import { useAuditedSave, getMetadataTimestamp } from '../hooks/useAuditedSave'
 
 const TABS = [
   { id: 'company', label: 'Company Info', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
@@ -52,6 +53,18 @@ export function GlobalEditor() {
     enquiryLink: '',
     features: { enableThemeSwitcher: false },
   })
+  const [initialTimestamp, setInitialTimestamp] = useState(null)
+
+  // Audited save hook
+  const { save, forceSave, isSaving, isConflict } = useAuditedSave('global', {
+    onSuccess: () => success('Global settings saved!'),
+    onError: (err) => {
+      if (err.code !== 'CONFLICT') {
+        error(getErrorMessage(err))
+      }
+    },
+    invalidateKeys: ['global']
+  })
 
   // Fetch global data
   const { data, isLoading } = useQuery({
@@ -76,19 +89,9 @@ export function GlobalEditor() {
       }
       setFormData(normalized)
       setInitialData(normalized)
+      setInitialTimestamp(getMetadataTimestamp(data))
     }
   }, [data])
-
-  // Save mutation
-  const saveMutation = useMutation({
-    mutationFn: async (newData) => {
-      await update(ref(db, 'siteContent/global'), newData)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['siteContent', 'global'] })
-      queryClient.invalidateQueries({ queryKey: ['global'] })
-    },
-  })
 
   // Delete mutation
   const deleteMutation = useMutation({
@@ -164,11 +167,21 @@ export function GlobalEditor() {
 
   const handleSave = async () => {
     try {
-      await saveMutation.mutateAsync(formData)
+      await save(formData, initialTimestamp)
       setInitialData(formData)
-      success('Global settings saved!')
     } catch (err) {
-      error(getErrorMessage(err))
+      if (err.code !== 'CONFLICT') {
+        console.error('Failed to save global settings:', err)
+      }
+    }
+  }
+
+  const handleForceSave = async () => {
+    try {
+      await forceSave(formData)
+      setInitialData(formData)
+    } catch (err) {
+      console.error('Failed to force save:', err)
     }
   }
 
@@ -368,7 +381,7 @@ export function GlobalEditor() {
         </MasterDetailLayout>
       )}
 
-      <SaveBar isDirty={isDirty} hasErrors={hasErrors} onSave={handleSave} onDiscard={handleDiscard} isSaving={saveMutation.isPending} />
+      <SaveBar isDirty={isDirty} hasErrors={hasErrors} onSave={handleSave} onDiscard={handleDiscard} isSaving={isSaving} lastEditedBy={data?._metadata?.updatedBy} lastEditedAt={data?._metadata?.updatedAt} isConflict={isConflict} onForceSave={handleForceSave} />
     </div>
   )
 }

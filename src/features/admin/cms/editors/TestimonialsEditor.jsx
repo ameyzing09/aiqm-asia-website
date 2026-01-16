@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ref, get, update, remove } from 'firebase/database'
+import { ref, get, remove } from 'firebase/database'
 import { db } from '../../../../services/firebase'
 import { ValidatedInput } from '../components/ValidatedInput'
 import { ValidatedTextarea } from '../components/ValidatedTextarea'
@@ -8,6 +8,7 @@ import { FormCard } from '../components/FormCard'
 import { SaveBar } from '../components/SaveBar'
 import { ProfileAssetCard } from '../components/ProfileAssetCard'
 import { useToast, getErrorMessage } from '../hooks/useToast'
+import { useAuditedSave, getMetadataTimestamp } from '../hooks/useAuditedSave'
 
 // Character limits for testimonials
 const CHAR_LIMITS = {
@@ -22,6 +23,18 @@ export function TestimonialsEditor() {
   const { success, error } = useToast()
   const [formData, setFormData] = useState({})
   const [initialData, setInitialData] = useState({})
+  const [initialTimestamp, setInitialTimestamp] = useState(null)
+
+  // Audited save hook
+  const { save, forceSave, isSaving, isConflict } = useAuditedSave('testimonials', {
+    onSuccess: () => success('Testimonials saved successfully!'),
+    onError: (err) => {
+      if (err.code !== 'CONFLICT') {
+        error(getErrorMessage(err))
+      }
+    },
+    invalidateKeys: ['testimonials']
+  })
 
   // Fetch testimonials data
   const { data, isLoading } = useQuery({
@@ -31,17 +44,6 @@ export function TestimonialsEditor() {
       return snapshot.exists() ? snapshot.val() : {}
     },
     staleTime: 5 * 60 * 1000,
-  })
-
-  // Save mutation
-  const saveMutation = useMutation({
-    mutationFn: async (newData) => {
-      await update(ref(db, 'siteContent/testimonials'), newData)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['siteContent', 'testimonials'] })
-      queryClient.invalidateQueries({ queryKey: ['testimonials'] })
-    },
   })
 
   // Delete mutation
@@ -60,6 +62,7 @@ export function TestimonialsEditor() {
     if (data) {
       setFormData(data)
       setInitialData(data)
+      setInitialTimestamp(getMetadataTimestamp(data))
     }
   }, [data])
 
@@ -144,15 +147,25 @@ export function TestimonialsEditor() {
     })
   }
 
-  // Handle save
+  // Handle save with optimistic locking
   const handleSave = async () => {
     try {
-      await saveMutation.mutateAsync(formData)
+      await save(formData, initialTimestamp)
       setInitialData(formData)
-      success('Testimonials saved successfully!')
     } catch (err) {
-      error(getErrorMessage(err))
-      console.error('Failed to save testimonials:', err)
+      if (err.code !== 'CONFLICT') {
+        console.error('Failed to save testimonials:', err)
+      }
+    }
+  }
+
+  // Handle force save (overwrite conflicts)
+  const handleForceSave = async () => {
+    try {
+      await forceSave(formData)
+      setInitialData(formData)
+    } catch (err) {
+      console.error('Failed to force save:', err)
     }
   }
 
@@ -378,7 +391,11 @@ export function TestimonialsEditor() {
         hasErrors={hasErrors}
         onSave={handleSave}
         onDiscard={handleDiscard}
-        isSaving={saveMutation.isPending}
+        isSaving={isSaving}
+        lastEditedBy={data?._metadata?.updatedBy}
+        lastEditedAt={data?._metadata?.updatedAt}
+        isConflict={isConflict}
+        onForceSave={handleForceSave}
       />
     </div>
   )

@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ref, get, update, remove } from 'firebase/database'
+import { ref, get, update, remove, serverTimestamp } from 'firebase/database'
 import { ref as storageRef, deleteObject } from 'firebase/storage'
 import { db, storage } from '../../../../services/firebase'
+import { useAuth } from '../../../../hooks/useAuth'
 import { ValidatedInput } from '../components/ValidatedInput'
 import { ValidatedTextarea } from '../components/ValidatedTextarea'
 import { FormCard } from '../components/FormCard'
@@ -10,6 +11,7 @@ import { SaveBar } from '../components/SaveBar'
 import { MasterDetailLayout } from '../components/MasterDetailLayout'
 import { useStorage } from '../hooks/useStorage'
 import { useToast, getErrorMessage } from '../hooks/useToast'
+import { getMetadataTimestamp } from '../hooks/useAuditedSave'
 import { motion } from 'framer-motion'
 
 // Character limits
@@ -167,6 +169,7 @@ function ProfileAssetCard({ value, onUpload, storagePath, label = 'Photo' }) {
 
 export function LeadershipEditor() {
   const queryClient = useQueryClient()
+  const { user } = useAuth()
   const { success, error } = useToast()
   const [activeTab, setActiveTab] = useState('director')
   const [selectedFacultyId, setSelectedFacultyId] = useState(null)
@@ -177,6 +180,7 @@ export function LeadershipEditor() {
     faculty: {},
   })
   const [initialData, setInitialData] = useState(formData)
+  const [initialTimestamp, setInitialTimestamp] = useState(null)
 
   // Fetch leadership data
   const { data: leadershipData, isLoading: leadershipLoading } = useQuery({
@@ -200,21 +204,34 @@ export function LeadershipEditor() {
 
   const isLoading = leadershipLoading || facultyLoading
 
-  // Save mutation
+  // Save mutation with audit metadata
   const saveMutation = useMutation({
     mutationFn: async (newData) => {
+      const metadata = {
+        updatedBy: user?.email || 'unknown',
+        updatedAt: serverTimestamp(),
+        updatedByUid: user?.uid || null
+      }
       await update(ref(db, 'siteContent/leadership'), {
         director: newData.director,
         directorsMessage: newData.directorsMessage,
         directorImpact: newData.directorImpact,
+        _metadata: metadata,
       })
-      await update(ref(db, 'siteContent/faculty'), newData.faculty)
+      await update(ref(db, 'siteContent/faculty'), {
+        ...newData.faculty,
+        _metadata: metadata,
+      })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['siteContent', 'leadership'] })
       queryClient.invalidateQueries({ queryKey: ['siteContent', 'faculty'] })
       queryClient.invalidateQueries({ queryKey: ['leadership'] })
+      success('Leadership data saved successfully!')
     },
+    onError: (err) => {
+      error(getErrorMessage(err))
+    }
   })
 
   // Delete faculty mutation
@@ -243,6 +260,7 @@ export function LeadershipEditor() {
       }
       setFormData(merged)
       setInitialData(merged)
+      setInitialTimestamp(getMetadataTimestamp(leadershipData))
     }
   }, [leadershipData, facultyData])
 
@@ -375,9 +393,8 @@ export function LeadershipEditor() {
     try {
       await saveMutation.mutateAsync(formData)
       setInitialData(formData)
-      success('Leadership data saved successfully!')
     } catch (err) {
-      error(getErrorMessage(err))
+      console.error('Failed to save leadership data:', err)
     }
   }
 
@@ -718,6 +735,8 @@ export function LeadershipEditor() {
         onSave={handleSave}
         onDiscard={handleDiscard}
         isSaving={saveMutation.isPending}
+        lastEditedBy={leadershipData?._metadata?.updatedBy}
+        lastEditedAt={leadershipData?._metadata?.updatedAt}
       />
     </div>
   )

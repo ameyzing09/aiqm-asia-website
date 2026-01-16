@@ -1,9 +1,12 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useCMSData } from '../hooks/useCMSData'
+import { useQuery } from '@tanstack/react-query'
+import { ref, get } from 'firebase/database'
+import { db } from '../../../../services/firebase'
 import { ValidatedInput } from '../components/ValidatedInput'
 import { FormCard } from '../components/FormCard'
 import { SaveBar } from '../components/SaveBar'
 import { useToast, getErrorMessage } from '../hooks/useToast'
+import { useAuditedSave, getMetadataTimestamp } from '../hooks/useAuditedSave'
 
 // Character limits for stats
 const CHAR_LIMITS = {
@@ -13,16 +16,37 @@ const CHAR_LIMITS = {
 }
 
 export function StatsEditor() {
-  const { data, isLoading, save, isSaving } = useCMSData('stats')
   const { success, error } = useToast()
   const [formData, setFormData] = useState({})
   const [initialData, setInitialData] = useState({})
+  const [initialTimestamp, setInitialTimestamp] = useState(null)
+
+  // Audited save hook
+  const { save, forceSave, isSaving, isConflict } = useAuditedSave('stats', {
+    onSuccess: () => success('Statistics saved successfully!'),
+    onError: (err) => {
+      if (err.code !== 'CONFLICT') {
+        error(getErrorMessage(err))
+      }
+    }
+  })
+
+  // Fetch stats data
+  const { data, isLoading } = useQuery({
+    queryKey: ['siteContent', 'stats'],
+    queryFn: async () => {
+      const snapshot = await get(ref(db, 'siteContent/stats'))
+      return snapshot.exists() ? snapshot.val() : {}
+    },
+    staleTime: 5 * 60 * 1000,
+  })
 
   // Initialize form data when Firebase data loads
   useEffect(() => {
     if (data) {
       setFormData(data)
       setInitialData(data)
+      setInitialTimestamp(getMetadataTimestamp(data))
     }
   }, [data])
 
@@ -52,15 +76,25 @@ export function StatsEditor() {
     }))
   }
 
-  // Handle save
+  // Handle save with optimistic locking
   const handleSave = async () => {
     try {
-      await save(formData)
+      await save(formData, initialTimestamp)
       setInitialData(formData)
-      success('Statistics saved successfully!')
     } catch (err) {
-      error(getErrorMessage(err))
-      console.error('Failed to save stats:', err)
+      if (err.code !== 'CONFLICT') {
+        console.error('Failed to save stats:', err)
+      }
+    }
+  }
+
+  // Handle force save (overwrite conflicts)
+  const handleForceSave = async () => {
+    try {
+      await forceSave(formData)
+      setInitialData(formData)
+    } catch (err) {
+      console.error('Failed to force save:', err)
     }
   }
 
@@ -186,6 +220,10 @@ export function StatsEditor() {
         onSave={handleSave}
         onDiscard={handleDiscard}
         isSaving={isSaving}
+        lastEditedBy={data?._metadata?.updatedBy}
+        lastEditedAt={data?._metadata?.updatedAt}
+        isConflict={isConflict}
+        onForceSave={handleForceSave}
       />
     </div>
   )

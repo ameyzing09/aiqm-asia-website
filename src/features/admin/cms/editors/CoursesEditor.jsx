@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ref, get, update, remove } from 'firebase/database'
+import { ref, get, remove } from 'firebase/database'
 import { db } from '../../../../services/firebase'
 import { ValidatedInput } from '../components/ValidatedInput'
 import { ValidatedTextarea } from '../components/ValidatedTextarea'
@@ -8,6 +8,7 @@ import { SaveBar } from '../components/SaveBar'
 import { MasterDetailLayout } from '../components/MasterDetailLayout'
 import { useStorage } from '../hooks/useStorage'
 import { useToast, getErrorMessage } from '../hooks/useToast'
+import { useAuditedSave, getMetadataTimestamp } from '../hooks/useAuditedSave'
 import { motion } from 'framer-motion'
 
 // Character limits for courses
@@ -429,6 +430,17 @@ export function CoursesEditor() {
   const [formData, setFormData] = useState({})
   const [initialData, setInitialData] = useState({})
   const [selectedCourseId, setSelectedCourseId] = useState(null)
+  const [initialTimestamp, setInitialTimestamp] = useState(null)
+
+  // Audited save hook - Universal audit trail
+  const { save, forceSave, isSaving, isConflict } = useAuditedSave('courses', {
+    onSuccess: () => success('Courses saved successfully!'),
+    onError: (err) => {
+      if (err.code !== 'CONFLICT') {
+        error(getErrorMessage(err))
+      }
+    }
+  })
 
   // Fetch courses data
   const { data, isLoading } = useQuery({
@@ -438,17 +450,6 @@ export function CoursesEditor() {
       return snapshot.exists() ? snapshot.val() : {}
     },
     staleTime: 5 * 60 * 1000,
-  })
-
-  // Save mutation
-  const saveMutation = useMutation({
-    mutationFn: async (newData) => {
-      await update(ref(db, 'siteContent/courses'), newData)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['siteContent', 'courses'] })
-      queryClient.invalidateQueries({ queryKey: ['courses'] })
-    },
   })
 
   // Delete mutation
@@ -469,6 +470,8 @@ export function CoursesEditor() {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing query data to local form state for editing
       setFormData(data)
       setInitialData(data)
+      // Capture timestamp for optimistic locking
+      setInitialTimestamp(getMetadataTimestamp(data))
     }
   }, [data])
 
@@ -565,15 +568,25 @@ export function CoursesEditor() {
     })
   }
 
-  // Handle save
+  // Handle save with optimistic locking
   const handleSave = async () => {
     try {
-      await saveMutation.mutateAsync(formData)
+      await save(formData, initialTimestamp)
       setInitialData(formData)
-      success('Courses saved successfully!')
     } catch (err) {
-      error(getErrorMessage(err))
-      console.error('Failed to save courses:', err)
+      if (err.code !== 'CONFLICT') {
+        console.error('Failed to save courses:', err)
+      }
+    }
+  }
+
+  // Handle force save (overwrite conflicts)
+  const handleForceSave = async () => {
+    try {
+      await forceSave(formData)
+      setInitialData(formData)
+    } catch (err) {
+      console.error('Failed to force save:', err)
     }
   }
 
@@ -830,13 +843,17 @@ export function CoursesEditor() {
         )}
       </MasterDetailLayout>
 
-      {/* Save Bar */}
+      {/* Save Bar - Universal Audit Trail */}
       <SaveBar
         isDirty={isDirty}
         hasErrors={hasErrors}
         onSave={handleSave}
         onDiscard={handleDiscard}
-        isSaving={saveMutation.isPending}
+        isSaving={isSaving}
+        lastEditedBy={data?._metadata?.updatedBy}
+        lastEditedAt={data?._metadata?.updatedAt}
+        isConflict={isConflict}
+        onForceSave={handleForceSave}
       />
     </div>
   )

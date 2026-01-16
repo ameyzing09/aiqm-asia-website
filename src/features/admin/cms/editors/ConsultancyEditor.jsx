@@ -1,7 +1,9 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ref, get, update, remove } from 'firebase/database'
+import { ref, get, update, remove, serverTimestamp } from 'firebase/database'
 import { db } from '../../../../services/firebase'
+import { useAuth } from '../../../../hooks/useAuth'
 import { ValidatedInput } from '../components/ValidatedInput'
 import { ValidatedTextarea } from '../components/ValidatedTextarea'
 import { FormCard } from '../components/FormCard'
@@ -9,6 +11,7 @@ import { SaveBar } from '../components/SaveBar'
 import { MasterDetailLayout } from '../components/MasterDetailLayout'
 import { useStorage } from '../hooks/useStorage'
 import { useToast, getErrorMessage } from '../hooks/useToast'
+import { getMetadataTimestamp } from '../hooks/useAuditedSave'
 import { motion } from 'framer-motion'
 
 // Character limits
@@ -103,6 +106,7 @@ function ImageAssetCard({ value, onUpload, storagePath, label = 'Image' }) {
 
 export function ConsultancyEditor() {
   const queryClient = useQueryClient()
+  const { user } = useAuth()
   const { success, error } = useToast()
   const [activeTab, setActiveTab] = useState('services')
   const [selectedServiceId, setSelectedServiceId] = useState(null)
@@ -121,6 +125,7 @@ export function ConsultancyEditor() {
     caseStudyOutcomes: {},
     industries: {},
   })
+  const [initialTimestamp, setInitialTimestamp] = useState(null)
 
   // Fetch all consultancy data
   const { data: servicesData, isLoading: servicesLoading } = useQuery({
@@ -166,11 +171,20 @@ export function ConsultancyEditor() {
       }
       setFormData(data)
       setInitialData(data)
+      // Track timestamp from services as the primary reference
+      setInitialTimestamp(getMetadataTimestamp(servicesData))
     }
   }, [servicesData, serviceDeliverablesData, caseStudiesData, caseStudyOutcomesData, industriesData])
 
   const saveMutation = useMutation({
-    mutationFn: async ({ path, data }) => { await update(ref(db, `siteContent/${path}`), data) },
+    mutationFn: async ({ path, data }) => {
+      const metadata = {
+        updatedBy: user?.email || 'unknown',
+        updatedAt: serverTimestamp(),
+        updatedByUid: user?.uid || null
+      }
+      await update(ref(db, `siteContent/${path}`), { ...data, _metadata: metadata })
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['siteContent'] })
     },
@@ -411,7 +425,19 @@ export function ConsultancyEditor() {
           items={caseStudiesArray}
           selectedId={selectedCaseStudyId}
           onSelect={setSelectedCaseStudyId}
-          renderListItemMeta={(c) => <p className="text-xs text-gray-500">{c.active === false ? 'Inactive' : 'Active'}</p>}
+          renderListItem={(c, isSelected) => (
+            <div className="flex items-center justify-between">
+              <div className="min-w-0 flex-1">
+                <p className={`font-medium truncate ${isSelected ? 'text-white' : 'text-gray-300'}`}>
+                  {c.industry || 'Untitled'}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">{c.active === false ? 'Inactive' : 'Active'}</p>
+              </div>
+              {c.active === false && (
+                <span className="ml-2 px-1.5 py-0.5 text-xs bg-gray-700 text-gray-400 rounded">Inactive</span>
+              )}
+            </div>
+          )}
           emptyMessage="No case studies yet"
           addButton={{ label: 'Add Case Study', onClick: () => addItem('caseStudies') }}
           detailTitle={selectedCaseStudy?.industry}
@@ -527,7 +553,15 @@ export function ConsultancyEditor() {
         </div>
       )}
 
-      <SaveBar isDirty={isDirty} hasErrors={hasErrors} onSave={handleSave} onDiscard={handleDiscard} isSaving={saveMutation.isPending} />
+      <SaveBar
+        isDirty={isDirty}
+        hasErrors={hasErrors}
+        onSave={handleSave}
+        onDiscard={handleDiscard}
+        isSaving={saveMutation.isPending}
+        lastEditedBy={servicesData?._metadata?.updatedBy}
+        lastEditedAt={servicesData?._metadata?.updatedAt}
+      />
     </div>
   )
 }

@@ -18,6 +18,7 @@ import { LeadershipEditor } from './features/admin/cms/editors/LeadershipEditor'
 import { ConsultancyEditor } from './features/admin/cms/editors/ConsultancyEditor'
 import { GlobalEditor } from './features/admin/cms/editors/GlobalEditor'
 import { CTABannersEditor } from './features/admin/cms/editors/CTABannersEditor'
+import { TeamManagementEditor } from './features/admin/cms/editors/TeamManagementEditor'
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
           <Route path="consultancy" element={<ConsultancyEditor />} />
           <Route path="cta-banners" element={<CTABannersEditor />} />
           <Route path="global" element={<GlobalEditor />} />
+          <Route path="team" element={<TeamManagementEditor />} />
         </Route>
       </Routes>
     </AuthProvider>

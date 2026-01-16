@@ -1,13 +1,15 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ref, get, update } from 'firebase/database'
+import { ref, get, update, serverTimestamp } from 'firebase/database'
 import { db } from '../../../../services/firebase'
+import { useAuth } from '../../../../hooks/useAuth'
 import { ValidatedInput } from '../components/ValidatedInput'
 import { ValidatedTextarea } from '../components/ValidatedTextarea'
 import { FormCard } from '../components/FormCard'
 import { SaveBar } from '../components/SaveBar'
 import { ImageAssetCard } from '../components/ImageAssetCard'
 import { useToast, getErrorMessage } from '../hooks/useToast'
+import { getMetadataTimestamp } from '../hooks/useAuditedSave'
 
 // Character limits for hero sections
 const CHAR_LIMITS = {
@@ -72,10 +74,12 @@ const DEFAULT_CONTENT = {
 
 export function HeroEditor() {
   const queryClient = useQueryClient()
+  const { user } = useAuth()
   const { success, error } = useToast()
   const [activePage, setActivePage] = useState('home')
   const [formData, setFormData] = useState({})
   const [initialData, setInitialData] = useState({})
+  const [initialTimestamp, setInitialTimestamp] = useState(null)
 
   // Fetch hero data for active page
   const { data, isLoading } = useQuery({
@@ -87,15 +91,27 @@ export function HeroEditor() {
     staleTime: 5 * 60 * 1000,
   })
 
-  // Save mutation
+  // Save mutation with audit metadata
   const saveMutation = useMutation({
     mutationFn: async (newData) => {
-      await update(ref(db, `siteContent/heroes/${activePage}`), newData)
+      const dataWithMeta = {
+        ...newData,
+        _metadata: {
+          updatedBy: user?.email || 'unknown',
+          updatedAt: serverTimestamp(),
+          updatedByUid: user?.uid || null
+        }
+      }
+      await update(ref(db, `siteContent/heroes/${activePage}`), dataWithMeta)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['siteContent', 'heroes', activePage] })
       queryClient.invalidateQueries({ queryKey: ['heroes', activePage] })
+      success('Hero section saved successfully!')
     },
+    onError: (err) => {
+      error(getErrorMessage(err))
+    }
   })
 
   // Initialize form data when Firebase data loads or page changes
@@ -103,11 +119,13 @@ export function HeroEditor() {
     if (data) {
       setFormData(data)
       setInitialData(data)
+      setInitialTimestamp(getMetadataTimestamp(data))
     } else {
       // Use defaults if no data
       const defaults = DEFAULT_CONTENT[activePage] || {}
       setFormData(defaults)
       setInitialData(defaults)
+      setInitialTimestamp(null)
     }
   }, [data, activePage])
 
@@ -137,9 +155,7 @@ export function HeroEditor() {
     try {
       await saveMutation.mutateAsync(formData)
       setInitialData(formData)
-      success('Hero section saved successfully!')
     } catch (err) {
-      error(getErrorMessage(err))
       console.error('Failed to save hero:', err)
     }
   }
@@ -322,7 +338,7 @@ export function HeroEditor() {
                     storagePath={`heroes/${activePage}`}
                     label="Hero Image"
                     aspectRatio="aspect-video"
-                    maxSize="max-w-md"
+                    maxWidth="max-w-md"
                     placeholderIcon={
                       <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -375,6 +391,8 @@ export function HeroEditor() {
         onSave={handleSave}
         onDiscard={handleDiscard}
         isSaving={saveMutation.isPending}
+        lastEditedBy={data?._metadata?.updatedBy}
+        lastEditedAt={data?._metadata?.updatedAt}
       />
     </div>
   )

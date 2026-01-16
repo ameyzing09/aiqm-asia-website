@@ -17,10 +17,10 @@ export function ImageAssetCard({
   onChange,
   storagePath,
   accept = 'image/*',
-  maxSize = 5 * 1024 * 1024, // 5MB default
+  maxSizeBytes = 5 * 1024 * 1024, // 5MB default
   label,
   aspectRatio = 'aspect-video',
-  maxSize: containerMaxSize = 'max-w-sm',
+  maxWidth = 'max-w-sm',
   placeholderIcon,
   className = '',
   wrapperClassName = '',
@@ -44,8 +44,8 @@ export function ImageAssetCard({
     }
 
     // Validate file size
-    if (file.size > maxSize) {
-      setLocalError(`File size must be less than ${Math.round(maxSize / 1024 / 1024)}MB`)
+    if (file.size > maxSizeBytes) {
+      setLocalError(`File size must be less than ${Math.round(maxSizeBytes / 1024 / 1024)}MB`)
       return
     }
 
@@ -59,7 +59,7 @@ export function ImageAssetCard({
     } catch (err) {
       console.error('Upload failed:', err)
     }
-  }, [storagePath, maxSize, upload, onChange, reset])
+  }, [storagePath, maxSizeBytes, upload, onChange, reset])
 
   // Drag event handlers
   const handleDragOver = useCallback((e) => {
@@ -112,7 +112,7 @@ export function ImageAssetCard({
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          className={`relative ${containerMaxSize}`}
+          className={`relative ${maxWidth}`}
         >
           {/* Hidden file input */}
           <input
@@ -209,7 +209,7 @@ export function ImageAssetCard({
                 {isDragging ? 'Drop image here' : 'Drop image or click to browse'}
               </p>
               <p className="text-gray-500 text-xs">
-                PNG, JPG, WebP up to {Math.round(maxSize / 1024 / 1024)}MB
+                PNG, JPG, WebP up to {Math.round(maxSizeBytes / 1024 / 1024)}MB
               </p>
             </div>
           )}

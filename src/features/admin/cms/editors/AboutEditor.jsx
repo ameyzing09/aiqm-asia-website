@@ -9,6 +9,7 @@ import { SaveBar } from '../components/SaveBar'
 import { ImageAssetCard } from '../components/ImageAssetCard'
 import { ProfileAssetCard } from '../components/ProfileAssetCard'
 import { useToast, getErrorMessage } from '../hooks/useToast'
+import { useAuditedSave, getMetadataTimestamp } from '../hooks/useAuditedSave'
 
 // Character limits for about page content
 const CHAR_LIMITS = {
@@ -64,6 +65,18 @@ export function AboutEditor() {
   const [activeTab, setActiveTab] = useState('story')
   const [formData, setFormData] = useState(DEFAULT_CONTENT)
   const [initialData, setInitialData] = useState(DEFAULT_CONTENT)
+  const [initialTimestamp, setInitialTimestamp] = useState(null)
+
+  // Audited save hook for about content
+  const { save, forceSave, isSaving, isConflict } = useAuditedSave('about', {
+    onSuccess: () => success('About page saved successfully!'),
+    onError: (err) => {
+      if (err.code !== 'CONFLICT') {
+        error(getErrorMessage(err))
+      }
+    },
+    invalidateKeys: ['about', ['siteContent', 'leadership'], 'leadership']
+  })
 
   // Fetch about page data
   const { data, isLoading } = useQuery({
@@ -75,23 +88,17 @@ export function AboutEditor() {
     staleTime: 5 * 60 * 1000,
   })
 
-  // Save mutation
+  // Additional save for leadership sync
   const saveMutation = useMutation({
-    mutationFn: async (newData) => {
-      // Save about page content
-      await update(ref(db, 'siteContent/about'), newData)
-
-      // CRITICAL: Also save director's message to leadership path
-      // useLeadership.js reads from siteContent/leadership/directorsMessage
-      if (newData.director?.message) {
+    mutationFn: async (directorMessage) => {
+      // Sync director's message to leadership path
+      if (directorMessage) {
         await update(ref(db, 'siteContent/leadership'), {
-          directorsMessage: newData.director.message,
+          directorsMessage: directorMessage,
         })
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['siteContent', 'about'] })
-      queryClient.invalidateQueries({ queryKey: ['about'] })
       queryClient.invalidateQueries({ queryKey: ['siteContent', 'leadership'] })
       queryClient.invalidateQueries({ queryKey: ['leadership'] })
     },
@@ -112,6 +119,7 @@ export function AboutEditor() {
       }
       setFormData(mergedData)
       setInitialData(mergedData)
+      setInitialTimestamp(getMetadataTimestamp(data))
     }
   }, [data])
 
@@ -148,15 +156,33 @@ export function AboutEditor() {
     }))
   }
 
-  // Handle save
+  // Handle save with optimistic locking
   const handleSave = async () => {
     try {
-      await saveMutation.mutateAsync(formData)
+      await save(formData, initialTimestamp)
+      // Also sync director's message to leadership path
+      if (formData.director?.message) {
+        await saveMutation.mutateAsync(formData.director.message)
+      }
       setInitialData(formData)
-      success('About page saved successfully!')
     } catch (err) {
-      error(getErrorMessage(err))
-      console.error('Failed to save about content:', err)
+      if (err.code !== 'CONFLICT') {
+        console.error('Failed to save about content:', err)
+      }
+    }
+  }
+
+  // Handle force save (overwrite conflicts)
+  const handleForceSave = async () => {
+    try {
+      await forceSave(formData)
+      // Also sync director's message to leadership path
+      if (formData.director?.message) {
+        await saveMutation.mutateAsync(formData.director.message)
+      }
+      setInitialData(formData)
+    } catch (err) {
+      console.error('Failed to force save:', err)
     }
   }
 
@@ -286,7 +312,7 @@ export function AboutEditor() {
                   storagePath="about/story"
                   label="Story Image"
                   aspectRatio="aspect-[4/3]"
-                  maxSize="max-w-sm"
+                  maxWidth="max-w-sm"
                   placeholderIcon={
                     <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -421,7 +447,7 @@ export function AboutEditor() {
                   storagePath="about/global-map"
                   label="Global Map Image"
                   aspectRatio="aspect-video"
-                  maxSize="max-w-xl"
+                  maxWidth="max-w-xl"
                   placeholderIcon={
                     <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -538,7 +564,11 @@ export function AboutEditor() {
         hasErrors={hasErrors}
         onSave={handleSave}
         onDiscard={handleDiscard}
-        isSaving={saveMutation.isPending}
+        isSaving={isSaving || saveMutation.isPending}
+        lastEditedBy={data?._metadata?.updatedBy}
+        lastEditedAt={data?._metadata?.updatedAt}
+        isConflict={isConflict}
+        onForceSave={handleForceSave}
       />
     </div>
   )
