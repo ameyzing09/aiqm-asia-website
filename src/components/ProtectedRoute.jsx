@@ -28,7 +28,7 @@ export function ProtectedRoute({ children }) {
             Your email ({user.email}) is not authorized to access the admin panel.
           </p>
           <button
-            onClick={() => window.location.href = '/'}
+            onClick={() => (window.location.href = '/')}
             className="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
           >
             Return to Home

@@ -6,7 +6,7 @@ import { useFirebaseQuery } from '../useFirebaseQuery'
  * Returns: Object with section headers keyed by section name
  */
 export const useSectionHeaders = (section = null) => {
-  return useFirebaseQuery(['sectionHeaders'], (data) => {
+  return useFirebaseQuery(['sectionHeaders'], data => {
     if (!data) return section ? { title: '', description: '' } : {}
 
     // If specific section requested, return just that section

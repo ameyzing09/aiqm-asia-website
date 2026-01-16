@@ -5,19 +5,19 @@ import { useFirebaseQuery } from '../useFirebaseQuery'
  * Transforms Firebase object to sorted array.
  */
 export const useCountries = () => {
-  return useFirebaseQuery(['countries'], (data) => {
+  return useFirebaseQuery(['countries'], data => {
     if (!data) return []
 
     // DEFENSIVE: Handle both array and object formats from Firebase
     const items = Array.isArray(data)
       ? data.map((item, index) => ({
           id: item.id || `country-${index}`,
-          ...item
+          ...item,
         }))
       : Object.entries(data).map(([id, item]) => ({ id, ...item }))
 
     return items
-      .map((item) => ({
+      .map(item => ({
         id: item.id,
         name: item.name || '',
         flag: item.flag || '',

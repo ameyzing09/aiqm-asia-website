@@ -19,23 +19,23 @@ export const useLeadership = () => {
       ])
 
       // DEFENSIVE: Extract with fallback to empty object
-      const leadership = results[0].status === 'fulfilled' && results[0].value.exists()
-        ? results[0].value.val() : {}
-      const facultyData = results[1].status === 'fulfilled' && results[1].value.exists()
-        ? results[1].value.val() : {}
-      const aboutData = results[2].status === 'fulfilled' && results[2].value.exists()
-        ? results[2].value.val() : {}
+      const leadership =
+        results[0].status === 'fulfilled' && results[0].value.exists() ? results[0].value.val() : {}
+      const facultyData =
+        results[1].status === 'fulfilled' && results[1].value.exists() ? results[1].value.val() : {}
+      const aboutData =
+        results[2].status === 'fulfilled' && results[2].value.exists() ? results[2].value.val() : {}
 
       // DEFENSIVE: Faculty transformation with Array.isArray check + ID generation
       const facultyItems = Array.isArray(facultyData)
         ? facultyData.map((item, index) => ({
             id: item.id || `faculty-${index}`,
-            ...item
+            ...item,
           }))
         : Object.entries(facultyData).map(([id, item]) => ({ id, ...item }))
 
       const faculty = facultyItems
-        .map((item) => ({
+        .map(item => ({
           id: item.id || '',
           name: item.name || '',
           title: item.title || '',
@@ -51,16 +51,16 @@ export const useLeadership = () => {
       const impactItems = Array.isArray(impactData)
         ? impactData.map((item, index) => ({
             id: item.id || `impact-${index}`,
-            ...(typeof item === 'object' ? item : { text: item })
+            ...(typeof item === 'object' ? item : { text: item }),
           }))
         : Object.entries(impactData).map(([id, item]) => ({
             id,
-            ...(typeof item === 'object' ? item : { text: item })
+            ...(typeof item === 'object' ? item : { text: item }),
           }))
 
       const directorImpact = impactItems
-        .map((item) => ({
-          text: typeof item === 'string' ? item : (item.text || ''),
+        .map(item => ({
+          text: typeof item === 'string' ? item : item.text || '',
           order: typeof item === 'object' ? (item.order ?? 999) : 999,
         }))
         .sort((a, b) => a.order - b.order)
@@ -77,9 +77,7 @@ export const useLeadership = () => {
       }
 
       // DEFENSIVE: Try multiple paths for director's message (leadership, then about.director.message)
-      const directorsMessage = leadership.directorMessage
-        || aboutData?.director?.message
-        || ''
+      const directorsMessage = leadership.directorMessage || aboutData?.director?.message || ''
 
       return {
         director,

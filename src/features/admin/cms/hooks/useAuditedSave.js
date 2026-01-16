@@ -25,20 +25,20 @@ export function useAuditedSave(section, options = {}) {
   /**
    * Inject audit metadata into data object
    */
-  const injectMetadata = (data) => ({
+  const injectMetadata = data => ({
     ...data,
     _metadata: {
       updatedBy: user?.email || 'unknown',
       updatedAt: serverTimestamp(),
-      updatedByUid: user?.uid || null
-    }
+      updatedByUid: user?.uid || null,
+    },
   })
 
   /**
    * Check for version conflicts (optimistic locking)
    * Returns true if data has been modified since initialTimestamp
    */
-  const checkForConflict = async (initialTimestamp) => {
+  const checkForConflict = async initialTimestamp => {
     if (!initialTimestamp) return { hasConflict: false }
 
     try {
@@ -54,8 +54,8 @@ export function useAuditedSave(section, options = {}) {
           hasConflict: true,
           conflictInfo: {
             lastEditor: currentMeta?.updatedBy || 'Unknown',
-            lastEditedAt: currentTimestamp
-          }
+            lastEditedAt: currentTimestamp,
+          },
         }
       }
 
@@ -77,7 +77,7 @@ export function useAuditedSave(section, options = {}) {
         if (hasConflict) {
           const error = new Error(
             `This content was modified by ${conflictInfo.lastEditor} while you were editing. ` +
-            `Refresh to see the latest version or force save to overwrite.`
+              `Refresh to see the latest version or force save to overwrite.`
           )
           error.code = 'CONFLICT'
           error.conflictInfo = conflictInfo
@@ -91,7 +91,7 @@ export function useAuditedSave(section, options = {}) {
 
       return { success: true }
     },
-    onSuccess: (result) => {
+    onSuccess: result => {
       // Invalidate standard queries
       queryClient.invalidateQueries({ queryKey: ['siteContent', section] })
       queryClient.invalidateQueries({ queryKey: [section] })
@@ -103,9 +103,9 @@ export function useAuditedSave(section, options = {}) {
 
       onSuccess?.(result)
     },
-    onError: (error) => {
+    onError: error => {
       onError?.(error)
-    }
+    },
   })
 
   /**
@@ -118,7 +118,7 @@ export function useAuditedSave(section, options = {}) {
   /**
    * Force save, ignoring conflicts
    */
-  const forceSave = (data) => {
+  const forceSave = data => {
     return saveMutation.mutateAsync({ data, initialTimestamp: null, forceOverwrite: true })
   }
 
@@ -128,7 +128,7 @@ export function useAuditedSave(section, options = {}) {
     isSaving: saveMutation.isPending,
     saveError: saveMutation.error,
     isConflict: saveMutation.error?.code === 'CONFLICT',
-    conflictInfo: saveMutation.error?.conflictInfo
+    conflictInfo: saveMutation.error?.conflictInfo,
   }
 }
 
@@ -158,6 +158,6 @@ export function formatMetadata(metadata) {
   return {
     email,
     time: dateStr,
-    display: `Last edited by ${email} at ${dateStr}`
+    display: `Last edited by ${email} at ${dateStr}`,
   }
 }

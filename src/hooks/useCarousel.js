@@ -7,21 +7,21 @@ export function useCarousel(itemsCount, autoRotateInterval = 5000) {
   useEffect(() => {
     if (autoRotateInterval) {
       const interval = setInterval(() => {
-        setCurrentIndex((prev) => (prev + 1) % itemsCount)
+        setCurrentIndex(prev => (prev + 1) % itemsCount)
       }, autoRotateInterval)
       return () => clearInterval(interval)
     }
   }, [itemsCount, autoRotateInterval])
 
   const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % itemsCount)
+    setCurrentIndex(prev => (prev + 1) % itemsCount)
   }
 
   const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + itemsCount) % itemsCount)
+    setCurrentIndex(prev => (prev - 1 + itemsCount) % itemsCount)
   }
 
-  const goToIndex = (index) => {
+  const goToIndex = index => {
     setCurrentIndex(index)
   }
 

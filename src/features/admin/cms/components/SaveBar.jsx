@@ -26,7 +26,7 @@ export function SaveBar({
   onForceSave,
 }) {
   // Format timestamp for display
-  const formatTimestamp = (timestamp) => {
+  const formatTimestamp = timestamp => {
     if (!timestamp || typeof timestamp !== 'number') return null
     const date = new Date(timestamp)
     const now = new Date()
@@ -58,7 +58,9 @@ export function SaveBar({
           <div className="h-6 bg-gradient-to-t from-gray-900 to-transparent" />
 
           {/* Main bar */}
-          <div className={`backdrop-blur-xl border-t px-4 py-4 ${isConflict ? 'bg-red-900/95 border-red-500/30' : 'bg-gray-900/95 border-white/10'}`}>
+          <div
+            className={`backdrop-blur-xl border-t px-4 py-4 ${isConflict ? 'bg-red-900/95 border-red-500/30' : 'bg-gray-900/95 border-white/10'}`}
+          >
             <div className="flex items-center justify-between max-w-4xl mx-auto">
               {/* Left side - Status indicator */}
               <div className="flex items-center gap-3">
@@ -71,12 +73,8 @@ export function SaveBar({
                       className="w-2.5 h-2.5 bg-red-400 rounded-full"
                     />
                     <div>
-                      <span className="text-sm font-medium text-red-400">
-                        Conflict detected
-                      </span>
-                      <p className="text-xs text-red-300/70">
-                        Someone else edited this content
-                      </p>
+                      <span className="text-sm font-medium text-red-400">Conflict detected</span>
+                      <p className="text-xs text-red-300/70">Someone else edited this content</p>
                     </div>
                   </div>
                 ) : (
@@ -87,13 +85,9 @@ export function SaveBar({
                       transition={{ duration: 2, repeat: Infinity }}
                       className="w-2 h-2 bg-amber-400 rounded-full"
                     />
-                    <span className="text-sm font-medium text-amber-400">
-                      Unsaved changes
-                    </span>
+                    <span className="text-sm font-medium text-amber-400">Unsaved changes</span>
                     {hasErrors && (
-                      <span className="text-xs text-red-400 ml-2">
-                        (Fix errors before saving)
-                      </span>
+                      <span className="text-xs text-red-400 ml-2">(Fix errors before saving)</span>
                     )}
                   </div>
                 )}

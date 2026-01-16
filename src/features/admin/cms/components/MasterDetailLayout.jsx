@@ -30,7 +30,7 @@ export function MasterDetailLayout({
   const [mobileView, setMobileView] = useState('list')
 
   // Handle item selection - also switches to detail view on mobile
-  const handleSelect = (id) => {
+  const handleSelect = id => {
     onSelect(id)
     if (window.innerWidth < 1024) {
       setMobileView('detail')
@@ -46,9 +46,13 @@ export function MasterDetailLayout({
   const selectedItem = items.find(item => item.id === selectedId)
 
   return (
-    <div className={`grid grid-cols-12 gap-4 lg:gap-6 overflow-hidden w-full max-w-full box-border ${className}`}>
+    <div
+      className={`grid grid-cols-12 gap-4 lg:gap-6 overflow-hidden w-full max-w-full box-border ${className}`}
+    >
       {/* Master List Panel */}
-      <div className={`col-span-12 lg:col-span-4 ${mobileView === 'detail' ? 'hidden lg:block' : 'block'}`}>
+      <div
+        className={`col-span-12 lg:col-span-4 ${mobileView === 'detail' ? 'hidden lg:block' : 'block'}`}
+      >
         <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl overflow-hidden h-full">
           {/* List Header */}
           <div className="p-4 border-b border-white/10 flex items-center justify-between">
@@ -61,7 +65,12 @@ export function MasterDetailLayout({
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white text-sm rounded-lg transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
                 </svg>
                 {addButton.label}
               </button>
@@ -75,8 +84,18 @@ export function MasterDetailLayout({
               <div className="p-8 text-center">
                 {emptyIcon || (
                   <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                    <svg
+                      className="w-6 h-6 text-gray-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                      />
                     </svg>
                   </div>
                 )}
@@ -93,15 +112,16 @@ export function MasterDetailLayout({
             ) : (
               // Item List
               <div className="divide-y divide-white/5">
-                {items.map((item) => (
+                {items.map(item => (
                   <button
                     key={item.id}
                     onClick={() => handleSelect(item.id)}
                     className={`
                       w-full p-4 text-left transition-colors
-                      ${selectedId === item.id
-                        ? 'bg-primary-600/20 border-l-2 border-primary-500'
-                        : 'hover:bg-white/5 border-l-2 border-transparent'
+                      ${
+                        selectedId === item.id
+                          ? 'bg-primary-600/20 border-l-2 border-primary-500'
+                          : 'hover:bg-white/5 border-l-2 border-transparent'
                       }
                     `}
                   >
@@ -110,13 +130,13 @@ export function MasterDetailLayout({
                     ) : (
                       <div className="flex items-center justify-between">
                         <div className="min-w-0 flex-1">
-                          <p className={`font-medium truncate ${selectedId === item.id ? 'text-white' : 'text-gray-300'}`}>
+                          <p
+                            className={`font-medium truncate ${selectedId === item.id ? 'text-white' : 'text-gray-300'}`}
+                          >
                             {item.title || item.name || 'Untitled'}
                           </p>
                           {renderListItemMeta && (
-                            <div className="mt-1">
-                              {renderListItemMeta(item)}
-                            </div>
+                            <div className="mt-1">{renderListItemMeta(item)}</div>
                           )}
                         </div>
                         {item.active === false && (
@@ -135,7 +155,9 @@ export function MasterDetailLayout({
       </div>
 
       {/* Detail Panel */}
-      <div className={`col-span-12 lg:col-span-8 ${mobileView === 'list' ? 'hidden lg:block' : 'block'}`}>
+      <div
+        className={`col-span-12 lg:col-span-8 ${mobileView === 'list' ? 'hidden lg:block' : 'block'}`}
+      >
         <AnimatePresence mode="wait">
           {selectedId ? (
             <motion.div
@@ -152,8 +174,18 @@ export function MasterDetailLayout({
                   onClick={handleBack}
                   className="p-2 -ml-2 hover:bg-white/10 rounded-lg transition-colors"
                 >
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  <svg
+                    className="w-5 h-5 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
                   </svg>
                 </button>
                 <span className="font-medium text-white truncate">
@@ -162,9 +194,7 @@ export function MasterDetailLayout({
               </div>
 
               {/* Detail Content */}
-              <div className="p-4 lg:p-6">
-                {children}
-              </div>
+              <div className="p-4 lg:p-6">{children}</div>
             </motion.div>
           ) : (
             // No Selection State (Desktop only)
@@ -174,8 +204,18 @@ export function MasterDetailLayout({
               className="hidden lg:flex backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-12 text-center flex-col items-center justify-center"
             >
               <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+                <svg
+                  className="w-8 h-8 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"
+                  />
                 </svg>
               </div>
               <p className="text-gray-400">Select an item from the list to edit</p>

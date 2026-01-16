@@ -6,7 +6,7 @@ import { useFirebaseQuery } from '../useFirebaseQuery'
  * Returns: Object with storyImage and globalMapImage
  */
 export const useAboutImages = () => {
-  return useFirebaseQuery(['about'], (data) => {
+  return useFirebaseQuery(['about'], data => {
     if (!data) return null
 
     return {

@@ -6,7 +6,7 @@ import { useFirebaseQuery } from '../useFirebaseQuery'
  * Returns: Object with companyInfo, contact, navigationLabels, socialLinks (as array), accreditations
  */
 export const useGlobal = () => {
-  return useFirebaseQuery(['global'], (data) => {
+  return useFirebaseQuery(['global'], data => {
     if (!data) return null
 
     // DEFENSIVE: Transform socialLinks to array format

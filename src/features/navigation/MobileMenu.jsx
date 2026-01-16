@@ -2,7 +2,13 @@ import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '../../components/Button'
 
-export function MobileMenu({ isOpen, onClose, navLinks = [], ctaButtonText = 'Enroll Now', enquiryLink = '' }) {
+export function MobileMenu({
+  isOpen,
+  onClose,
+  navLinks = [],
+  ctaButtonText = 'Enroll Now',
+  enquiryLink = '',
+}) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -33,15 +39,25 @@ export function MobileMenu({ isOpen, onClose, navLinks = [], ctaButtonText = 'En
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 aria-label="Close menu"
               >
-                <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-6 h-6 text-gray-600 dark:text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
 
             {/* Navigation Links */}
             <nav className="p-4 space-y-1">
-              {navLinks.map((link) => {
+              {navLinks.map(link => {
                 const isRoute = link.href.startsWith('/')
                 return isRoute ? (
                   <Link

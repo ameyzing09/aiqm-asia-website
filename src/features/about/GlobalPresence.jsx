@@ -23,11 +23,15 @@ export function GlobalPresence() {
         label: countriesStat?.label || 'Countries',
       },
       {
-        value: clientsStat ? `${clientsStat.value?.toLocaleString?.() || clientsStat.value}${clientsStat.suffix || ''}` : '500+',
+        value: clientsStat
+          ? `${clientsStat.value?.toLocaleString?.() || clientsStat.value}${clientsStat.suffix || ''}`
+          : '500+',
         label: clientsStat?.label || 'Corporate Clients',
       },
       {
-        value: projectsStat ? `${projectsStat.value?.toLocaleString?.() || projectsStat.value}${projectsStat.suffix || ''}` : '15,000+',
+        value: projectsStat
+          ? `${projectsStat.value?.toLocaleString?.() || projectsStat.value}${projectsStat.suffix || ''}`
+          : '15,000+',
         label: projectsStat?.label || 'Projects Globally',
       },
       {
@@ -45,7 +49,8 @@ export function GlobalPresence() {
             {sectionHeader?.title || 'Our Global Footprint'}
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            {sectionHeader?.description || 'Serving organizations across 13 countries with world-class quality management solutions'}
+            {sectionHeader?.description ||
+              'Serving organizations across 13 countries with world-class quality management solutions'}
           </p>
         </div>
 
@@ -60,8 +65,18 @@ export function GlobalPresence() {
               />
             ) : (
               <div className="text-center p-8">
-                <svg className="w-32 h-32 mx-auto text-primary-600 dark:text-primary-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="w-32 h-32 mx-auto text-primary-600 dark:text-primary-400 mb-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1}
+                    d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
                 <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Image Placeholder: World Map
@@ -79,26 +94,27 @@ export function GlobalPresence() {
 
         {/* Countries List */}
         <div className="flex flex-wrap justify-center gap-4">
-          {isLoading ? (
-            [1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="flex items-center gap-3 bg-white dark:bg-gray-800 rounded-xl px-6 py-4 shadow-md animate-pulse">
-                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded" />
-                <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded" />
-              </div>
-            ))
-          ) : (
-            countries?.map((country) => (
-              <div
-                key={country.id}
-                className="flex items-center gap-3 bg-white dark:bg-gray-800 rounded-xl px-6 py-4 shadow-md hover:shadow-xl transition-shadow duration-300"
-              >
-                <span className="text-3xl">{country.flag}</span>
-                <span className="text-base font-medium text-gray-900 dark:text-white">
-                  {country.name}
-                </span>
-              </div>
-            ))
-          )}
+          {isLoading
+            ? [1, 2, 3, 4, 5, 6].map(i => (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 bg-white dark:bg-gray-800 rounded-xl px-6 py-4 shadow-md animate-pulse"
+                >
+                  <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded" />
+                </div>
+              ))
+            : countries?.map(country => (
+                <div
+                  key={country.id}
+                  className="flex items-center gap-3 bg-white dark:bg-gray-800 rounded-xl px-6 py-4 shadow-md hover:shadow-xl transition-shadow duration-300"
+                >
+                  <span className="text-3xl">{country.flag}</span>
+                  <span className="text-base font-medium text-gray-900 dark:text-white">
+                    {country.name}
+                  </span>
+                </div>
+              ))}
         </div>
 
         {/* Stats Banner */}

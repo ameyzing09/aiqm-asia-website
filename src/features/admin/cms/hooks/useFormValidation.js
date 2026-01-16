@@ -59,25 +59,28 @@ export function useFormValidation(initialData, schema) {
   }, [formData, initialData])
 
   // Get validation state for a specific field (for visual indicators)
-  const getFieldState = useCallback((field) => {
-    const value = formData[field] || ''
-    const strValue = String(value)
-    const rules = schema?.[field]
+  const getFieldState = useCallback(
+    field => {
+      const value = formData[field] || ''
+      const strValue = String(value)
+      const rules = schema?.[field]
 
-    if (!rules?.maxLength) {
-      return { state: 'normal', percentage: 0 }
-    }
+      if (!rules?.maxLength) {
+        return { state: 'normal', percentage: 0 }
+      }
 
-    const percentage = (strValue.length / rules.maxLength) * 100
+      const percentage = (strValue.length / rules.maxLength) * 100
 
-    if (percentage > 100) {
-      return { state: 'error', percentage }
-    }
-    if (percentage > 80) {
-      return { state: 'warning', percentage }
-    }
-    return { state: 'normal', percentage }
-  }, [formData, schema])
+      if (percentage > 100) {
+        return { state: 'error', percentage }
+      }
+      if (percentage > 80) {
+        return { state: 'warning', percentage }
+      }
+      return { state: 'normal', percentage }
+    },
+    [formData, schema]
+  )
 
   // Reset form to initial state
   const reset = useCallback(() => {
@@ -86,7 +89,7 @@ export function useFormValidation(initialData, schema) {
   }, [initialData])
 
   // Set entire form data (useful for loading from Firebase)
-  const setData = useCallback((data) => {
+  const setData = useCallback(data => {
     setFormData(data)
   }, [])
 

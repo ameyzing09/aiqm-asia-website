@@ -10,7 +10,7 @@ export function getErrorMessage(error) {
     switch (error.code) {
       case 'PERMISSION_DENIED':
       case 'permission-denied':
-        return 'You don\'t have permission to make this change. Please contact the administrator.'
+        return "You don't have permission to make this change. Please contact the administrator."
       case 'NETWORK_ERROR':
       case 'unavailable':
         return 'Network error. Please check your internet connection and try again.'
@@ -19,7 +19,7 @@ export function getErrorMessage(error) {
       case 'auth/too-many-requests':
         return 'Too many attempts. Please wait a moment and try again.'
       case 'storage/unauthorized':
-        return 'You don\'t have permission to upload files.'
+        return "You don't have permission to upload files."
       case 'storage/canceled':
         return 'Upload was cancelled.'
       case 'storage/unknown':
@@ -41,7 +41,7 @@ export function getErrorMessage(error) {
   }
 
   if (message.includes('permission') || message.includes('unauthorized')) {
-    return 'You don\'t have permission to perform this action.'
+    return "You don't have permission to perform this action."
   }
 
   if (message.includes('timeout')) {

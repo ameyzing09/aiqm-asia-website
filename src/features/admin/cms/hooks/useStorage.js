@@ -18,11 +18,11 @@ export function useStorage() {
     return new Promise((resolve, reject) => {
       uploadTask.on(
         'state_changed',
-        (snapshot) => {
+        snapshot => {
           const pct = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
           setProgress(Math.round(pct))
         },
-        (err) => {
+        err => {
           setError(err.message)
           setUploading(false)
           reject(err)

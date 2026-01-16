@@ -24,11 +24,11 @@ export function StatsEditor() {
   // Audited save hook
   const { save, forceSave, isSaving, isConflict } = useAuditedSave('stats', {
     onSuccess: () => success('Statistics saved successfully!'),
-    onError: (err) => {
+    onError: err => {
       if (err.code !== 'CONFLICT') {
         error(getErrorMessage(err))
       }
-    }
+    },
   })
 
   // Fetch stats data
@@ -120,7 +120,10 @@ export function StatsEditor() {
         </div>
         <div className="grid gap-4">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 animate-pulse">
+            <div
+              key={i}
+              className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 animate-pulse"
+            >
               <div className="h-6 w-40 bg-white/10 rounded mb-4" />
               <div className="grid grid-cols-3 gap-4">
                 <div className="h-12 bg-white/10 rounded" />
@@ -140,25 +143,22 @@ export function StatsEditor() {
       <div>
         <h1 className="text-2xl font-bold text-white">Statistics</h1>
         <p className="text-gray-400 mt-1">
-          Edit achievement numbers displayed on the homepage. Changes sync instantly to the live site.
+          Edit achievement numbers displayed on the homepage. Changes sync instantly to the live
+          site.
         </p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid gap-4">
-        {statsArray.map((stat) => (
-          <FormCard
-            key={stat.id}
-            title={stat.label || 'Stat'}
-            description={`ID: ${stat.id}`}
-          >
+        {statsArray.map(stat => (
+          <FormCard key={stat.id} title={stat.label || 'Stat'} description={`ID: ${stat.id}`}>
             <div className="grid grid-cols-12 gap-4">
               {/* Value */}
               <ValidatedInput
                 wrapperClassName="col-span-12 md:col-span-3"
                 label="Value"
                 value={String(stat.value || '')}
-                onChange={(value) => updateStatField(stat.id, 'value', value)}
+                onChange={value => updateStatField(stat.id, 'value', value)}
                 maxLength={CHAR_LIMITS.value}
                 placeholder="95,000"
               />
@@ -168,7 +168,7 @@ export function StatsEditor() {
                 wrapperClassName="col-span-6 md:col-span-2"
                 label="Suffix"
                 value={stat.suffix || ''}
-                onChange={(value) => updateStatField(stat.id, 'suffix', value)}
+                onChange={value => updateStatField(stat.id, 'suffix', value)}
                 maxLength={CHAR_LIMITS.suffix}
                 placeholder="+"
               />
@@ -178,7 +178,7 @@ export function StatsEditor() {
                 wrapperClassName="col-span-12 md:col-span-5"
                 label="Label"
                 value={stat.label || ''}
-                onChange={(value) => updateStatField(stat.id, 'label', value)}
+                onChange={value => updateStatField(stat.id, 'label', value)}
                 maxLength={CHAR_LIMITS.label}
                 placeholder="Professionals Trained"
                 required
@@ -190,7 +190,7 @@ export function StatsEditor() {
                 <input
                   type="number"
                   value={stat.order || 0}
-                  onChange={(e) => updateStatField(stat.id, 'order', parseInt(e.target.value) || 0)}
+                  onChange={e => updateStatField(stat.id, 'order', parseInt(e.target.value) || 0)}
                   className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-primary-500/20 focus:border-primary-500 transition-colors duration-200"
                   min={0}
                 />
@@ -204,8 +204,18 @@ export function StatsEditor() {
       {statsArray.length === 0 && !isLoading && (
         <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-8 text-center">
           <div className="w-16 h-16 bg-gray-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            <svg
+              className="w-8 h-8 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
             </svg>
           </div>
           <h2 className="text-xl font-semibold text-white mb-2">No Statistics Found</h2>

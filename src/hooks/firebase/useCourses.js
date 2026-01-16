@@ -14,17 +14,22 @@ export const useCourses = () => {
       // Fetch courses and topics in parallel with graceful degradation
       const results = await Promise.allSettled([
         get(ref(db, 'siteContent/courses')),
-        get(ref(db, 'siteContent/courseTopics'))
+        get(ref(db, 'siteContent/courseTopics')),
       ])
 
       // Extract values, defaulting to empty on rejection
-      const coursesData = results[0].status === 'fulfilled' && results[0].value.exists()
-        ? results[0].value.val() : null
-      const topicsData = results[1].status === 'fulfilled' && results[1].value.exists()
-        ? results[1].value.val() : {}
+      const coursesData =
+        results[0].status === 'fulfilled' && results[0].value.exists()
+          ? results[0].value.val()
+          : null
+      const topicsData =
+        results[1].status === 'fulfilled' && results[1].value.exists() ? results[1].value.val() : {}
 
       // If no courses in Firebase, return hardcoded fallback
-      if (!coursesData || (typeof coursesData === 'object' && Object.keys(coursesData).length === 0)) {
+      if (
+        !coursesData ||
+        (typeof coursesData === 'object' && Object.keys(coursesData).length === 0)
+      ) {
         return ALL_COURSES
       }
 
@@ -32,18 +37,16 @@ export const useCourses = () => {
       const coursesItems = Array.isArray(coursesData)
         ? coursesData.map((item, index) => ({
             id: item.id || `course-${index}`,
-            ...item
+            ...item,
           }))
         : Object.entries(coursesData).map(([id, item]) => ({ id, ...item }))
 
       // Transform and merge Firebase data
       const courses = coursesItems
-        .map((course) => {
+        .map(course => {
           // DEFENSIVE: Get topics for this course with Array.isArray check
           const courseTopics = topicsData[course.id] || {}
-          const topics = Array.isArray(courseTopics)
-            ? courseTopics
-            : Object.values(courseTopics)
+          const topics = Array.isArray(courseTopics) ? courseTopics : Object.values(courseTopics)
 
           // Transform mode object to array format matching hardcoded structure
           const modeArray = []
@@ -72,7 +75,7 @@ export const useCourses = () => {
             order: course.order ?? 999,
             featured: course.featured ?? false,
             active: course.active !== false, // Default to true if not specified
-            sampleCertificateUrl: course.sampleCertificateUrl || ''
+            sampleCertificateUrl: course.sampleCertificateUrl || '',
           }
         })
         .filter(course => course.active)
@@ -87,6 +90,6 @@ export const useCourses = () => {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     // Return hardcoded data while loading to prevent empty state
-    placeholderData: ALL_COURSES
+    placeholderData: ALL_COURSES,
   })
 }

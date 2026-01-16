@@ -16,7 +16,9 @@ export function AboutHero() {
   // Fallback values
   const headline = hero?.headline || 'About'
   const highlightText = hero?.highlightText || 'AIQM India'
-  const subheadline = hero?.subheadline || "India's most trusted partner in quality excellence and operational transformation. For over 25 years, we've been empowering organizations and professionals with world-class Lean Six Sigma methodologies."
+  const subheadline =
+    hero?.subheadline ||
+    "India's most trusted partner in quality excellence and operational transformation. For over 25 years, we've been empowering organizations and professionals with world-class Lean Six Sigma methodologies."
   const badge = hero?.badge || 'Est. 1998'
   const primaryCtaText = hero?.primaryCtaText || 'Explore Courses'
   const primaryCtaLink = hero?.primaryCtaLink || '/courses'
@@ -69,11 +71,17 @@ export function AboutHero() {
         <nav className="flex mb-6">
           <ol className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
             <li>
-              <Link to="/" className="hover:text-primary-600 dark:hover:text-primary-400">Home</Link>
+              <Link to="/" className="hover:text-primary-600 dark:hover:text-primary-400">
+                Home
+              </Link>
             </li>
             <li>
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                <path
+                  fillRule="evenodd"
+                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                  clipRule="evenodd"
+                />
               </svg>
             </li>
             <li className="font-medium text-gray-900 dark:text-white">About</li>
@@ -86,19 +94,27 @@ export function AboutHero() {
           <div className="flex-1">
             {/* Badge */}
             <div className="inline-flex items-center px-4 py-2 bg-primary-100 dark:bg-primary-900/30 rounded-full mb-6">
-              <svg className="w-5 h-5 text-primary-600 dark:text-primary-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              <svg
+                className="w-5 h-5 text-primary-600 dark:text-primary-400 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
               </svg>
-              <span className="text-sm font-semibold text-primary-700 dark:text-primary-300">{badge}</span>
+              <span className="text-sm font-semibold text-primary-700 dark:text-primary-300">
+                {badge}
+              </span>
             </div>
 
             {/* Main Heading */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6 animate-fade-in">
               {headline}
               <br />
-              <span className="text-primary-600 dark:text-primary-400">
-                {highlightText}
-              </span>
+              <span className="text-primary-600 dark:text-primary-400">{highlightText}</span>
             </h1>
 
             <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-8 animate-slide-up">
@@ -109,7 +125,9 @@ export function AboutHero() {
             <div className="flex flex-wrap gap-8 mb-8">
               <div>
                 <div className="text-3xl font-bold text-primary-600 dark:text-primary-400">
-                  {experienceStat ? `${experienceStat.value}${experienceStat.suffix || '+'}` : '25+'}
+                  {experienceStat
+                    ? `${experienceStat.value}${experienceStat.suffix || '+'}`
+                    : '25+'}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   {experienceStat?.label || 'Years of Excellence'}
@@ -117,7 +135,9 @@ export function AboutHero() {
               </div>
               <div>
                 <div className="text-3xl font-bold text-primary-600 dark:text-primary-400">
-                  {professionalsStat ? `${professionalsStat.value?.toLocaleString?.() || professionalsStat.value}${professionalsStat.suffix || ''}` : '95,000+'}
+                  {professionalsStat
+                    ? `${professionalsStat.value?.toLocaleString?.() || professionalsStat.value}${professionalsStat.suffix || ''}`
+                    : '95,000+'}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   {professionalsStat?.label || 'Professionals Trained'}
@@ -161,8 +181,18 @@ export function AboutHero() {
                   />
                 ) : (
                   <div className="text-center p-8">
-                    <svg className="w-24 h-24 mx-auto text-primary-600 dark:text-primary-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    <svg
+                      className="w-24 h-24 mx-auto text-primary-600 dark:text-primary-400 mb-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                      />
                     </svg>
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                       Image Placeholder: Leadership Team
@@ -175,8 +205,8 @@ export function AboutHero() {
               </div>
 
               {/* Decorative Elements */}
-              <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-accent-500 rounded-full opacity-10 blur-2xl"></div>
-              <div className="absolute -top-4 -left-4 w-32 h-32 bg-primary-500 rounded-full opacity-10 blur-2xl"></div>
+              <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-accent-500 rounded-full opacity-10 blur-2xl" />
+              <div className="absolute -top-4 -left-4 w-32 h-32 bg-primary-500 rounded-full opacity-10 blur-2xl" />
             </div>
           </div>
         </div>

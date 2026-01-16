@@ -12,7 +12,11 @@ import { useAuditedSave, getMetadataTimestamp } from '../hooks/useAuditedSave'
 // Available CTA banner pages
 const PAGES = [
   { id: 'courses', label: 'Courses Page', description: 'CTA banner on the courses page' },
-  { id: 'certifications', label: 'Certifications Page', description: 'CTA banner on the certifications page' },
+  {
+    id: 'certifications',
+    label: 'Certifications Page',
+    description: 'CTA banner on the certifications page',
+  },
 ]
 
 const CHAR_LIMITS = {
@@ -47,12 +51,12 @@ export function CTABannersEditor() {
   // Audited save hook
   const { save, forceSave, isSaving, isConflict } = useAuditedSave('ctaBanners', {
     onSuccess: () => success('CTA banners saved successfully!'),
-    onError: (err) => {
+    onError: err => {
       if (err.code !== 'CONFLICT') {
         error(getErrorMessage(err))
       }
     },
-    invalidateKeys: ['ctaBanners']
+    invalidateKeys: ['ctaBanners'],
   })
 
   // Fetch CTA banners data
@@ -153,7 +157,10 @@ export function CTABannersEditor() {
         </div>
         <div className="space-y-4">
           {[1, 2, 3].map(i => (
-            <div key={i} className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 animate-pulse">
+            <div
+              key={i}
+              className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 animate-pulse"
+            >
               <div className="h-6 w-48 bg-white/10 rounded" />
             </div>
           ))}
@@ -167,7 +174,9 @@ export function CTABannersEditor() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-white">CTA Banners</h1>
-        <p className="text-gray-400 mt-1">Manage call-to-action banners, batch dates, and promotional content</p>
+        <p className="text-gray-400 mt-1">
+          Manage call-to-action banners, batch dates, and promotional content
+        </p>
       </div>
 
       {/* Page Tabs */}
@@ -183,7 +192,12 @@ export function CTABannersEditor() {
             }`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
+              />
             </svg>
             {page.label}
           </button>
@@ -200,7 +214,7 @@ export function CTABannersEditor() {
             wrapperClassName="col-span-12 lg:col-span-8"
             label="Headline"
             value={currentData.headline || ''}
-            onChange={(v) => updateField('headline', v)}
+            onChange={v => updateField('headline', v)}
             maxLength={CHAR_LIMITS.headline}
             placeholder="Ready to accelerate your career?"
           />
@@ -208,7 +222,7 @@ export function CTABannersEditor() {
             wrapperClassName="col-span-12 lg:col-span-4"
             label="Batch Info"
             value={currentData.batchInfo || ''}
-            onChange={(v) => updateField('batchInfo', v)}
+            onChange={v => updateField('batchInfo', v)}
             maxLength={CHAR_LIMITS.batchInfo}
             placeholder="Next batch: Feb 15"
           />
@@ -216,7 +230,7 @@ export function CTABannersEditor() {
             wrapperClassName="col-span-12"
             label="Subheadline"
             value={currentData.subheadline || ''}
-            onChange={(v) => updateField('subheadline', v)}
+            onChange={v => updateField('subheadline', v)}
             maxLength={CHAR_LIMITS.subheadline}
             placeholder="Join our next batch today and become a certified quality excellence professional!"
             rows={2}
@@ -233,7 +247,7 @@ export function CTABannersEditor() {
           {/* Primary Button */}
           <div className="col-span-12 lg:col-span-6 space-y-4">
             <h4 className="text-sm font-medium text-white flex items-center gap-2">
-              <span className="w-2 h-2 bg-primary-500 rounded-full"></span>
+              <span className="w-2 h-2 bg-primary-500 rounded-full" />
               Primary Button
             </h4>
             <div className="grid grid-cols-12 gap-4">
@@ -241,7 +255,7 @@ export function CTABannersEditor() {
                 wrapperClassName="col-span-12"
                 label="Button Text"
                 value={currentData.primaryCtaText || ''}
-                onChange={(v) => updateField('primaryCtaText', v)}
+                onChange={v => updateField('primaryCtaText', v)}
                 maxLength={CHAR_LIMITS.ctaText}
                 placeholder="Get Started Today"
               />
@@ -249,7 +263,7 @@ export function CTABannersEditor() {
                 wrapperClassName="col-span-12"
                 label="Button Link"
                 value={currentData.primaryCtaLink || ''}
-                onChange={(v) => updateField('primaryCtaLink', v)}
+                onChange={v => updateField('primaryCtaLink', v)}
                 maxLength={CHAR_LIMITS.ctaLink}
                 placeholder="https://forms.gle/..."
                 type="url"
@@ -260,7 +274,7 @@ export function CTABannersEditor() {
           {/* Secondary Button */}
           <div className="col-span-12 lg:col-span-6 space-y-4">
             <h4 className="text-sm font-medium text-white flex items-center gap-2">
-              <span className="w-2 h-2 bg-accent-500 rounded-full"></span>
+              <span className="w-2 h-2 bg-accent-500 rounded-full" />
               Secondary Button
             </h4>
             <div className="grid grid-cols-12 gap-4">
@@ -268,7 +282,7 @@ export function CTABannersEditor() {
                 wrapperClassName="col-span-12"
                 label="Button Text"
                 value={currentData.secondaryCtaText || ''}
-                onChange={(v) => updateField('secondaryCtaText', v)}
+                onChange={v => updateField('secondaryCtaText', v)}
                 maxLength={CHAR_LIMITS.ctaText}
                 placeholder="Talk to Our Advisors"
               />
@@ -276,7 +290,7 @@ export function CTABannersEditor() {
                 wrapperClassName="col-span-12"
                 label="Button Link"
                 value={currentData.secondaryCtaLink || ''}
-                onChange={(v) => updateField('secondaryCtaLink', v)}
+                onChange={v => updateField('secondaryCtaLink', v)}
                 maxLength={CHAR_LIMITS.ctaLink}
                 placeholder="#contact"
               />
@@ -296,7 +310,7 @@ export function CTABannersEditor() {
                 wrapperClassName="col-span-12 lg:col-span-4"
                 label="Trust Indicator 1"
                 value={currentData.trustIndicator1 || ''}
-                onChange={(v) => updateField('trustIndicator1', v)}
+                onChange={v => updateField('trustIndicator1', v)}
                 maxLength={CHAR_LIMITS.trustIndicator}
                 placeholder="Free initial consultation"
               />
@@ -304,7 +318,7 @@ export function CTABannersEditor() {
                 wrapperClassName="col-span-12 lg:col-span-4"
                 label="Trust Indicator 2"
                 value={currentData.trustIndicator2 || ''}
-                onChange={(v) => updateField('trustIndicator2', v)}
+                onChange={v => updateField('trustIndicator2', v)}
                 maxLength={CHAR_LIMITS.trustIndicator}
                 placeholder="No obligation quote"
               />
@@ -312,7 +326,7 @@ export function CTABannersEditor() {
                 wrapperClassName="col-span-12 lg:col-span-4"
                 label="Trust Indicator 3"
                 value={currentData.trustIndicator3 || ''}
-                onChange={(v) => updateField('trustIndicator3', v)}
+                onChange={v => updateField('trustIndicator3', v)}
                 maxLength={CHAR_LIMITS.trustIndicator}
                 placeholder="Flexible engagement models"
               />

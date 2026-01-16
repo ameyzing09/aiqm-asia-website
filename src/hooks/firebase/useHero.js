@@ -12,7 +12,7 @@ import { useFirebaseQuery } from '../useFirebaseQuery'
  * - consultancy: title
  */
 export const useHero = (page = 'home') => {
-  return useFirebaseQuery(['heroes', page], (data) => {
+  return useFirebaseQuery(['heroes', page], data => {
     if (!data) return null
 
     // Return all fields with defaults - schema varies by page

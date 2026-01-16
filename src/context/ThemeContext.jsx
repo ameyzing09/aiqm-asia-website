@@ -6,22 +6,14 @@ const THEME_MAP = {
   blue: 'blue',
   purple: 'purple',
   dark: 'dark',
-  green: 'green'
+  green: 'green',
 }
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState('blue')
   const [darkMode, setDarkMode] = useState(false)
 
-  // Initialize theme from localStorage
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'blue'
-    const savedDarkMode = localStorage.getItem('darkMode') === 'true'
-    setTheme(savedTheme)
-    setDarkMode(savedDarkMode)
-    applyTheme(savedTheme, savedDarkMode)
-  }, [])
-
+  // Apply theme to document - defined before useEffect that uses it
   const applyTheme = (newTheme, isDark) => {
     const root = document.documentElement
     root.setAttribute('data-theme', THEME_MAP[newTheme])
@@ -32,7 +24,16 @@ export function ThemeProvider({ children }) {
     }
   }
 
-  const changeTheme = (newTheme) => {
+  // Initialize theme from localStorage
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'blue'
+    const savedDarkMode = localStorage.getItem('darkMode') === 'true'
+    setTheme(savedTheme)
+    setDarkMode(savedDarkMode)
+    applyTheme(savedTheme, savedDarkMode)
+  }, [])
+
+  const changeTheme = newTheme => {
     setTheme(newTheme)
     localStorage.setItem('theme', newTheme)
     applyTheme(newTheme, darkMode)
@@ -52,9 +53,5 @@ export function ThemeProvider({ children }) {
     toggleDarkMode,
   }
 
-  return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
-  )
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }

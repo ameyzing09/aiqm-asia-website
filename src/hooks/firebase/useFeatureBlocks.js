@@ -17,21 +17,21 @@ export const useFeatureBlocks = () => {
       ])
 
       // DEFENSIVE: Extract with fallback to empty object
-      const blocksData = results[0].status === 'fulfilled' && results[0].value.exists()
-        ? results[0].value.val() : {}
-      const benefitsData = results[1].status === 'fulfilled' && results[1].value.exists()
-        ? results[1].value.val() : {}
+      const blocksData =
+        results[0].status === 'fulfilled' && results[0].value.exists() ? results[0].value.val() : {}
+      const benefitsData =
+        results[1].status === 'fulfilled' && results[1].value.exists() ? results[1].value.val() : {}
 
       // DEFENSIVE: Handle both array and object formats
       const blockItems = Array.isArray(blocksData)
         ? blocksData.map((item, index) => ({
             id: item.id || `block-${index}`,
-            ...item
+            ...item,
           }))
         : Object.entries(blocksData).map(([id, item]) => ({ id, ...item }))
 
       return blockItems
-        .map((block) => {
+        .map(block => {
           // Get nested benefits with defensive handling
           const blockBenefits = benefitsData[block.id] || {}
           const benefits = Array.isArray(blockBenefits)

@@ -11,7 +11,7 @@ export function AuthProvider({ children }) {
   const [isAuthorized, setIsAuthorized] = useState(false)
 
   // Check if a user is an admin by checking /admins/{uid} in the database
-  const checkAdminStatus = async (uid) => {
+  const checkAdminStatus = async uid => {
     if (!uid) return false
     try {
       const adminRef = ref(db, `admins/${uid}`)
@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
   }
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async currentUser => {
       setUser(currentUser)
       if (currentUser) {
         const isAdmin = await checkAdminStatus(currentUser.uid)
@@ -69,12 +69,8 @@ export function AuthProvider({ children }) {
     loading,
     isAuthorized,
     signInWithGoogle,
-    logout
+    logout,
   }
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

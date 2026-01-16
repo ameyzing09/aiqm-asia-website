@@ -16,11 +16,17 @@ export function CoursesPage() {
           <nav className="flex mb-4">
             <ol className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
               <li>
-                <a href="/" className="hover:text-primary-600 dark:hover:text-primary-400">Home</a>
+                <a href="/" className="hover:text-primary-600 dark:hover:text-primary-400">
+                  Home
+                </a>
               </li>
               <li>
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  <path
+                    fillRule="evenodd"
+                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </li>
               <li className="font-medium text-gray-900 dark:text-white">Courses</li>
@@ -30,7 +36,8 @@ export function CoursesPage() {
             Our Courses
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Choose from our comprehensive range of Lean Six Sigma certifications designed to elevate your career and transform your organization.
+            Choose from our comprehensive range of Lean Six Sigma certifications designed to elevate
+            your career and transform your organization.
           </p>
         </div>
       </section>

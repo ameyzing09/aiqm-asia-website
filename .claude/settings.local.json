@@ -9,7 +9,10 @@
       "Bash(del srcApp.css)",
       "Bash(npm run dev:*)",
       "Bash(npm uninstall:*)",
-      "WebFetch(domain:aiqmindia.com)"
+      "WebFetch(domain:aiqmindia.com)",
+      "Bash(npm run format:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run lint:fix:*)"
     ],
     "deny": [],
     "ask": []
