@@ -48,7 +48,7 @@ function ToastItem({ toast, onClose }) {
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: 100, scale: 0.9 }}
       transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-      className={`${styles.bg} text-white rounded-lg shadow-2xl overflow-hidden min-w-[300px] max-w-[400px]`}
+      className={`${styles.bg} text-white rounded-lg shadow-2xl overflow-hidden w-[calc(100vw-2rem)] sm:w-auto sm:min-w-[300px] max-w-[400px]`}
     >
       <div className="flex items-center gap-3 p-4">
         {/* Icon */}
@@ -93,7 +93,7 @@ export function ToastContainer() {
   const { toasts, removeToast } = context
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-3">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 sm:left-auto sm:right-6 sm:translate-x-0 z-[100] flex flex-col gap-3 px-4 sm:px-0">
       <AnimatePresence mode="popLayout">
         {toasts.map(toast => (
           <ToastItem key={toast.id} toast={toast} onClose={removeToast} />

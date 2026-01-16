@@ -139,6 +139,12 @@
     color-scheme: dark;
   }
 
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
   * {
     @apply transition-colors duration-200;
   }

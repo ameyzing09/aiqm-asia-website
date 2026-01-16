@@ -116,7 +116,7 @@ const navItems = [
   },
 ]
 
-export function Sidebar() {
+export function Sidebar({ onClose }) {
   const { adminRole } = useAuth()
 
   // Filter nav items based on user role
@@ -127,16 +127,30 @@ export function Sidebar() {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Logo */}
-      <div className="p-6 border-b border-white/10">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">AI</span>
+      {/* Logo + Close button */}
+      <div className="p-4 lg:p-6 border-b border-white/10">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">AI</span>
+            </div>
+            <div>
+              <h1 className="text-white font-bold">AIQM CMS</h1>
+              <p className="text-xs text-gray-500">Content Manager</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-white font-bold">AIQM CMS</h1>
-            <p className="text-xs text-gray-500">Content Manager</p>
-          </div>
+          {/* Close button - mobile only */}
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="lg:hidden p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg"
+              aria-label="Close menu"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
@@ -147,6 +161,7 @@ export function Sidebar() {
             key={item.id}
             to={item.path}
             end={item.path === '/admin'}
+            onClick={onClose}
             className={({ isActive }) =>
               `flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                 isActive

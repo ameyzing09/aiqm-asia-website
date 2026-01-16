@@ -48,7 +48,20 @@ export function Navigation() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Scroll lock when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [mobileMenuOpen])
+
   return (
+    <>
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
@@ -151,15 +164,17 @@ export function Navigation() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        <MobileMenu
-          isOpen={mobileMenuOpen}
-          onClose={() => setMobileMenuOpen(false)}
-          navLinks={NAV_LINKS}
-          ctaButtonText={ctaButtonText}
-          enquiryLink={global?.enquiryLink}
-        />
       </div>
     </nav>
+
+    {/* Mobile Menu - rendered outside nav for proper fixed positioning */}
+    <MobileMenu
+      isOpen={mobileMenuOpen}
+      onClose={() => setMobileMenuOpen(false)}
+      navLinks={NAV_LINKS}
+      ctaButtonText={ctaButtonText}
+      enquiryLink={global?.enquiryLink}
+    />
+  </>
   )
 }
