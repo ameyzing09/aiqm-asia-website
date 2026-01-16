@@ -1,12 +1,7 @@
 import { useState, useEffect, createContext } from 'react'
 import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth'
-import { auth, googleProvider } from '../services/firebase'
-
-const ADMIN_WHITELIST = [
-  'ameykode2001@gmail.com',
-  'dskode@aiqmindia.com',
-  'aniket@aiqmindia.com'
-]
+import { ref, get } from 'firebase/database'
+import { auth, googleProvider, db } from '../services/firebase'
 
 export const AuthContext = createContext(null)
 
@@ -15,10 +10,28 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const [isAuthorized, setIsAuthorized] = useState(false)
 
+  // Check if a user is an admin by checking /admins/{uid} in the database
+  const checkAdminStatus = async uid => {
+    if (!uid) return false
+    try {
+      const adminRef = ref(db, `admins/${uid}`)
+      const snapshot = await get(adminRef)
+      return snapshot.exists()
+    } catch (error) {
+      console.error('Error checking admin status:', error)
+      return false
+    }
+  }
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async currentUser => {
       setUser(currentUser)
-      setIsAuthorized(currentUser ? ADMIN_WHITELIST.includes(currentUser.email) : false)
+      if (currentUser) {
+        const isAdmin = await checkAdminStatus(currentUser.uid)
+        setIsAuthorized(isAdmin)
+      } else {
+        setIsAuthorized(false)
+      }
       setLoading(false)
     })
 
@@ -28,11 +41,11 @@ export function AuthProvider({ children }) {
   const signInWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider)
-      const userEmail = result.user.email
+      const isAdmin = await checkAdminStatus(result.user.uid)
 
-      if (!ADMIN_WHITELIST.includes(userEmail)) {
+      if (!isAdmin) {
         await signOut(auth)
-        throw new Error('Unauthorized: Your email is not in the admin whitelist')
+        throw new Error('Unauthorized: You are not registered as an admin')
       }
 
       return result.user
@@ -56,12 +69,8 @@ export function AuthProvider({ children }) {
     loading,
     isAuthorized,
     signInWithGoogle,
-    logout
+    logout,
   }
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

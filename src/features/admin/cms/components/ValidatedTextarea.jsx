@@ -35,22 +35,18 @@ export function ValidatedTextarea({
   const borderColor = isError
     ? 'border-red-500'
     : isWarning
-    ? 'border-amber-500'
-    : 'border-white/10'
+      ? 'border-amber-500'
+      : 'border-white/10'
 
   // Counter color based on state
-  const counterColor = isError
-    ? 'text-red-400'
-    : isWarning
-    ? 'text-amber-400'
-    : 'text-gray-500'
+  const counterColor = isError ? 'text-red-400' : isWarning ? 'text-amber-400' : 'text-gray-500'
 
   // Focus ring color
   const focusRing = isError
     ? 'focus:ring-red-500/20 focus:border-red-500'
     : isWarning
-    ? 'focus:ring-amber-500/20 focus:border-amber-500'
-    : 'focus:ring-primary-500/20 focus:border-primary-500'
+      ? 'focus:ring-amber-500/20 focus:border-amber-500'
+      : 'focus:ring-primary-500/20 focus:border-primary-500'
 
   // Auto-resize functionality
   useEffect(() => {
@@ -62,48 +58,46 @@ export function ValidatedTextarea({
 
   return (
     <div className={wrapperClassName}>
-    <div className={`space-y-2 ${className}`}>
-      {label && (
-        <label className="block text-sm font-medium text-gray-300">
-          {label}
-          {required && <span className="text-red-400 ml-1">*</span>}
-        </label>
-      )}
+      <div className={`space-y-2 ${className}`}>
+        {label && (
+          <label className="block text-sm font-medium text-gray-300">
+            {label}
+            {required && <span className="text-red-400 ml-1">*</span>}
+          </label>
+        )}
 
-      <motion.div
-        animate={isError ? { x: [-2, 2, -2, 2, 0] } : {}}
-        transition={{ duration: 0.3 }}
-      >
-        <textarea
-          ref={textareaRef}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          rows={rows}
-          className={`
+        <motion.div
+          animate={isError ? { x: [-2, 2, -2, 2, 0] } : {}}
+          transition={{ duration: 0.3 }}
+        >
+          <textarea
+            ref={textareaRef}
+            value={value}
+            onChange={e => onChange(e.target.value)}
+            placeholder={placeholder}
+            rows={rows}
+            className={`
             w-full px-4 py-3 bg-white/5 border ${borderColor} rounded-lg
             text-white placeholder-gray-500 resize-none
             focus:outline-none focus:ring-1 ${focusRing}
             transition-colors duration-200
           `}
-        />
-      </motion.div>
+          />
+        </motion.div>
 
-      <div className="flex items-center justify-between">
-        {/* Error message */}
-        {error && (
-          <span className="text-xs text-red-400">{error}</span>
-        )}
-        {!error && <span />}
+        <div className="flex items-center justify-between">
+          {/* Error message */}
+          {error && <span className="text-xs text-red-400">{error}</span>}
+          {!error && <span />}
 
-        {/* Character counter */}
-        {maxLength && (
-          <span className={`text-xs ${counterColor}`}>
-            {length}/{maxLength}
-          </span>
-        )}
+          {/* Character counter */}
+          {maxLength && (
+            <span className={`text-xs ${counterColor}`}>
+              {length}/{maxLength}
+            </span>
+          )}
+        </div>
       </div>
-    </div>
     </div>
   )
 }

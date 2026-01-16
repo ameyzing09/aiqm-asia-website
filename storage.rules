@@ -1,0 +1,28 @@
+rules_version = '2';
+
+// NOTE: Firebase Storage rules cannot access Realtime Database.
+// For a fully dynamic admin list, you would need either:
+// 1. Custom claims via Cloud Functions (recommended for production)
+// 2. Firestore for admin list (Storage rules can access Firestore)
+//
+// For now, admin emails must be updated here when changed.
+// Keep this in sync with the /admins node in RTDB.
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.token.email == 'ameykode2001@gmail.com' ||
+        request.auth.token.email == 'dskode@aiqmindia.com' ||
+        request.auth.token.email == 'aniket@aiqmindia.com'
+      );
+    }
+
+    // Public read access for all files (website needs to display images)
+    // Write access only for admins
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

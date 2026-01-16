@@ -4,13 +4,7 @@ import { useState } from 'react'
  * Glassmorphic form card container
  * Used to group related form fields in the CMS editors
  */
-export function FormCard({
-  title,
-  description,
-  children,
-  className = '',
-  actions,
-}) {
+export function FormCard({ title, description, children, className = '', actions }) {
   return (
     <div
       className={`
@@ -22,12 +16,8 @@ export function FormCard({
       {(title || description || actions) && (
         <div className="flex items-start justify-between mb-6">
           <div>
-            {title && (
-              <h3 className="text-lg font-semibold text-white">{title}</h3>
-            )}
-            {description && (
-              <p className="text-sm text-gray-400 mt-1">{description}</p>
-            )}
+            {title && <h3 className="text-lg font-semibold text-white">{title}</h3>}
+            {description && <p className="text-sm text-gray-400 mt-1">{description}</p>}
           </div>
           {actions && <div className="flex-shrink-0 ml-4">{actions}</div>}
         </div>
@@ -67,12 +57,8 @@ export function CollapsibleFormCard({
       >
         <div className="flex items-center gap-3">
           <div>
-            {title && (
-              <h3 className="text-lg font-semibold text-white">{title}</h3>
-            )}
-            {description && (
-              <p className="text-sm text-gray-400 mt-1">{description}</p>
-            )}
+            {title && <h3 className="text-lg font-semibold text-white">{title}</h3>}
+            {description && <p className="text-sm text-gray-400 mt-1">{description}</p>}
           </div>
           {badge && (
             <span className="px-2 py-1 text-xs font-medium bg-primary-600/20 text-primary-400 rounded-full">
@@ -90,12 +76,7 @@ export function CollapsibleFormCard({
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 

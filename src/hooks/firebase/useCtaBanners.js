@@ -6,7 +6,7 @@ import { useFirebaseQuery } from '../useFirebaseQuery'
  * Returns: Object with CTA content for specific page
  */
 export const useCtaBanners = (page = 'courses') => {
-  return useFirebaseQuery(['ctaBanners', page], (data) => {
+  return useFirebaseQuery(['ctaBanners', page], data => {
     if (!data) return null
 
     return {

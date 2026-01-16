@@ -13,26 +13,26 @@ export const useCaseStudies = () => {
       // Fetch case studies and outcomes in parallel with graceful degradation
       const results = await Promise.allSettled([
         get(ref(db, 'siteContent/caseStudies')),
-        get(ref(db, 'siteContent/caseStudyOutcomes'))
+        get(ref(db, 'siteContent/caseStudyOutcomes')),
       ])
 
       // Extract values, defaulting to empty on rejection
-      const studiesData = results[0].status === 'fulfilled' && results[0].value.exists()
-        ? results[0].value.val() : {}
-      const outcomesData = results[1].status === 'fulfilled' && results[1].value.exists()
-        ? results[1].value.val() : {}
+      const studiesData =
+        results[0].status === 'fulfilled' && results[0].value.exists() ? results[0].value.val() : {}
+      const outcomesData =
+        results[1].status === 'fulfilled' && results[1].value.exists() ? results[1].value.val() : {}
 
       // DEFENSIVE: Handle both array and object formats from Firebase
       const studiesItems = Array.isArray(studiesData)
         ? studiesData.map((item, index) => ({
             id: item.id || `case-${index}`,
-            ...item
+            ...item,
           }))
         : Object.entries(studiesData).map(([id, item]) => ({ id, ...item }))
 
       // Transform and merge
       return studiesItems
-        .map((item) => {
+        .map(item => {
           // DEFENSIVE: Get outcomes for this case study with Array.isArray check
           const studyOutcomes = outcomesData[item.id] || {}
           const outcomes = Array.isArray(studyOutcomes)
@@ -50,11 +50,11 @@ export const useCaseStudies = () => {
             colorTheme: item.colorTheme || 'blue',
             image: item.image || '',
             order: item.order ?? 999,
-            outcomes
+            outcomes,
           }
         })
         .sort((a, b) => a.order - b.order)
     },
-    staleTime: 5 * 60 * 1000 // 5 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
   })
 }

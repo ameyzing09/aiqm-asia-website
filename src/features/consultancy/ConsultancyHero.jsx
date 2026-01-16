@@ -16,7 +16,9 @@ export function ConsultancyHero() {
   // Fallback values
   const headline = hero?.headline || 'Driving Business Excellence'
   const highlightText = hero?.highlightText || 'Through Consultancy'
-  const subheadline = hero?.subheadline || 'Partner with AIQM India to transform your operations, reduce costs, and achieve sustainable growth through proven methodologies and expert guidance.'
+  const subheadline =
+    hero?.subheadline ||
+    'Partner with AIQM India to transform your operations, reduce costs, and achieve sustainable growth through proven methodologies and expert guidance.'
   const badge = hero?.badge || 'Expert Consulting Services'
   const primaryCtaText = hero?.primaryCtaText || 'Request Consultation'
   const primaryCtaLink = hero?.primaryCtaLink || '#request-consultation'
@@ -74,11 +76,17 @@ export function ConsultancyHero() {
         <nav className="flex mb-6">
           <ol className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
             <li>
-              <Link to="/" className="hover:text-primary-600 dark:hover:text-primary-400">Home</Link>
+              <Link to="/" className="hover:text-primary-600 dark:hover:text-primary-400">
+                Home
+              </Link>
             </li>
             <li>
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                <path
+                  fillRule="evenodd"
+                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                  clipRule="evenodd"
+                />
               </svg>
             </li>
             <li className="font-medium text-gray-900 dark:text-white">Consultancy</li>
@@ -91,19 +99,27 @@ export function ConsultancyHero() {
           <div className="flex-1">
             {/* Badge */}
             <div className="inline-flex items-center px-4 py-2 bg-primary-100 dark:bg-primary-900/30 rounded-full mb-6">
-              <svg className="w-5 h-5 text-primary-600 dark:text-primary-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clipRule="evenodd" />
+              <svg
+                className="w-5 h-5 text-primary-600 dark:text-primary-400 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z"
+                  clipRule="evenodd"
+                />
               </svg>
-              <span className="text-sm font-semibold text-primary-700 dark:text-primary-300">{badge}</span>
+              <span className="text-sm font-semibold text-primary-700 dark:text-primary-300">
+                {badge}
+              </span>
             </div>
 
             {/* Main Heading */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6 animate-fade-in">
               {headline}
               <br />
-              <span className="text-primary-600 dark:text-primary-400">
-                {highlightText}
-              </span>
+              <span className="text-primary-600 dark:text-primary-400">{highlightText}</span>
             </h1>
 
             <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-8 animate-slide-up">
@@ -114,7 +130,9 @@ export function ConsultancyHero() {
             <div className="flex flex-wrap gap-6 mb-8">
               <div>
                 <div className="text-3xl font-bold text-primary-600 dark:text-primary-400">
-                  {projectsStat ? `${projectsStat.value?.toLocaleString?.() || projectsStat.value}${projectsStat.suffix || ''}` : '15,000+'}
+                  {projectsStat
+                    ? `${projectsStat.value?.toLocaleString?.() || projectsStat.value}${projectsStat.suffix || ''}`
+                    : '15,000+'}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   {projectsStat?.label || 'Projects Delivered'}
@@ -162,8 +180,18 @@ export function ConsultancyHero() {
                   />
                 ) : (
                   <div className="text-center p-8">
-                    <svg className="w-24 h-24 mx-auto text-primary-600 dark:text-primary-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    <svg
+                      className="w-24 h-24 mx-auto text-primary-600 dark:text-primary-400 mb-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
                     </svg>
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                       Image Placeholder: Consultancy Team
@@ -176,8 +204,8 @@ export function ConsultancyHero() {
               </div>
 
               {/* Decorative Elements */}
-              <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-accent-500 rounded-full opacity-10 blur-2xl"></div>
-              <div className="absolute -top-4 -left-4 w-32 h-32 bg-primary-500 rounded-full opacity-10 blur-2xl"></div>
+              <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-accent-500 rounded-full opacity-10 blur-2xl" />
+              <div className="absolute -top-4 -left-4 w-32 h-32 bg-primary-500 rounded-full opacity-10 blur-2xl" />
             </div>
           </div>
         </div>

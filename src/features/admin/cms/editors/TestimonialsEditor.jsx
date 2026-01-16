@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ref, get, update, remove } from 'firebase/database'
+import { ref, get, remove } from 'firebase/database'
 import { db } from '../../../../services/firebase'
 import { ValidatedInput } from '../components/ValidatedInput'
 import { ValidatedTextarea } from '../components/ValidatedTextarea'
@@ -8,6 +8,7 @@ import { FormCard } from '../components/FormCard'
 import { SaveBar } from '../components/SaveBar'
 import { ProfileAssetCard } from '../components/ProfileAssetCard'
 import { useToast, getErrorMessage } from '../hooks/useToast'
+import { useAuditedSave, getMetadataTimestamp } from '../hooks/useAuditedSave'
 
 // Character limits for testimonials
 const CHAR_LIMITS = {
@@ -22,6 +23,18 @@ export function TestimonialsEditor() {
   const { success, error } = useToast()
   const [formData, setFormData] = useState({})
   const [initialData, setInitialData] = useState({})
+  const [initialTimestamp, setInitialTimestamp] = useState(null)
+
+  // Audited save hook
+  const { save, forceSave, isSaving, isConflict } = useAuditedSave('testimonials', {
+    onSuccess: () => success('Testimonials saved successfully!'),
+    onError: err => {
+      if (err.code !== 'CONFLICT') {
+        error(getErrorMessage(err))
+      }
+    },
+    invalidateKeys: ['testimonials'],
+  })
 
   // Fetch testimonials data
   const { data, isLoading } = useQuery({
@@ -33,20 +46,9 @@ export function TestimonialsEditor() {
     staleTime: 5 * 60 * 1000,
   })
 
-  // Save mutation
-  const saveMutation = useMutation({
-    mutationFn: async (newData) => {
-      await update(ref(db, 'siteContent/testimonials'), newData)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['siteContent', 'testimonials'] })
-      queryClient.invalidateQueries({ queryKey: ['testimonials'] })
-    },
-  })
-
   // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: async (testimonialId) => {
+    mutationFn: async testimonialId => {
       await remove(ref(db, `siteContent/testimonials/${testimonialId}`))
     },
     onSuccess: () => {
@@ -60,6 +62,7 @@ export function TestimonialsEditor() {
     if (data) {
       setFormData(data)
       setInitialData(data)
+      setInitialTimestamp(getMetadataTimestamp(data))
     }
   }, [data])
 
@@ -101,9 +104,8 @@ export function TestimonialsEditor() {
   // Add a new testimonial
   const addTestimonial = () => {
     const newId = `testimonial_${Date.now()}`
-    const newOrder = testimonialsArray.length > 0
-      ? Math.max(...testimonialsArray.map(t => t.order || 0)) + 1
-      : 1
+    const newOrder =
+      testimonialsArray.length > 0 ? Math.max(...testimonialsArray.map(t => t.order || 0)) + 1 : 1
 
     setFormData(prev => ({
       ...prev,
@@ -121,7 +123,7 @@ export function TestimonialsEditor() {
   }
 
   // Delete a testimonial
-  const handleDelete = async (testimonialId) => {
+  const handleDelete = async testimonialId => {
     if (!window.confirm('Are you sure you want to delete this testimonial?')) {
       return
     }
@@ -144,15 +146,25 @@ export function TestimonialsEditor() {
     })
   }
 
-  // Handle save
+  // Handle save with optimistic locking
   const handleSave = async () => {
     try {
-      await saveMutation.mutateAsync(formData)
+      await save(formData, initialTimestamp)
       setInitialData(formData)
-      success('Testimonials saved successfully!')
     } catch (err) {
-      error(getErrorMessage(err))
-      console.error('Failed to save testimonials:', err)
+      if (err.code !== 'CONFLICT') {
+        console.error('Failed to save testimonials:', err)
+      }
+    }
+  }
+
+  // Handle force save (overwrite conflicts)
+  const handleForceSave = async () => {
+    try {
+      await forceSave(formData)
+      setInitialData(formData)
+    } catch (err) {
+      console.error('Failed to force save:', err)
     }
   }
 
@@ -164,7 +176,7 @@ export function TestimonialsEditor() {
   // Star rating component
   const StarRating = ({ value, onChange }) => (
     <div className="flex gap-1">
-      {[1, 2, 3, 4, 5].map((star) => (
+      {[1, 2, 3, 4, 5].map(star => (
         <button
           key={star}
           type="button"
@@ -192,7 +204,10 @@ export function TestimonialsEditor() {
         </div>
         <div className="grid gap-6 md:grid-cols-2">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 animate-pulse">
+            <div
+              key={i}
+              className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 animate-pulse"
+            >
               <div className="flex items-start gap-4">
                 <div className="w-16 h-16 bg-white/10 rounded-full" />
                 <div className="flex-1 space-y-3">
@@ -231,11 +246,8 @@ export function TestimonialsEditor() {
 
       {/* Testimonials Grid */}
       <div className="grid gap-6 md:grid-cols-2">
-        {testimonialsArray.map((testimonial) => (
-          <FormCard
-            key={testimonial.id}
-            className="relative"
-          >
+        {testimonialsArray.map(testimonial => (
+          <FormCard key={testimonial.id} className="relative">
             {/* Active/Inactive Badge */}
             {testimonial.active === false && (
               <span className="absolute top-4 right-4 px-2 py-1 text-xs bg-gray-600/50 text-gray-300 rounded">
@@ -250,7 +262,7 @@ export function TestimonialsEditor() {
                 <div className="col-span-12 lg:col-span-4">
                   <ProfileAssetCard
                     value={testimonial.image}
-                    onChange={(url) => updateField(testimonial.id, 'image', url)}
+                    onChange={url => updateField(testimonial.id, 'image', url)}
                     storagePath={`testimonials/${testimonial.id}`}
                     label="Photo"
                   />
@@ -261,7 +273,7 @@ export function TestimonialsEditor() {
                   <ValidatedInput
                     label="Author Name"
                     value={testimonial.author || ''}
-                    onChange={(value) => updateField(testimonial.id, 'author', value)}
+                    onChange={value => updateField(testimonial.id, 'author', value)}
                     maxLength={CHAR_LIMITS.author}
                     placeholder="John Smith"
                     required
@@ -271,7 +283,7 @@ export function TestimonialsEditor() {
                       wrapperClassName="col-span-12 lg:col-span-7"
                       label="Role"
                       value={testimonial.role || ''}
-                      onChange={(value) => updateField(testimonial.id, 'role', value)}
+                      onChange={value => updateField(testimonial.id, 'role', value)}
                       maxLength={CHAR_LIMITS.role}
                       placeholder="Quality Manager"
                     />
@@ -279,7 +291,7 @@ export function TestimonialsEditor() {
                       wrapperClassName="col-span-12 lg:col-span-5"
                       label="Company"
                       value={testimonial.company || ''}
-                      onChange={(value) => updateField(testimonial.id, 'company', value)}
+                      onChange={value => updateField(testimonial.id, 'company', value)}
                       maxLength={CHAR_LIMITS.company}
                       placeholder="Tata Motors"
                     />
@@ -291,7 +303,7 @@ export function TestimonialsEditor() {
                   wrapperClassName="col-span-12"
                   label="Quote"
                   value={testimonial.quote || ''}
-                  onChange={(value) => updateField(testimonial.id, 'quote', value)}
+                  onChange={value => updateField(testimonial.id, 'quote', value)}
                   maxLength={CHAR_LIMITS.quote}
                   placeholder="The training transformed our approach to quality management..."
                   rows={3}
@@ -306,7 +318,7 @@ export function TestimonialsEditor() {
                   <label className="text-sm text-gray-400">Rating:</label>
                   <StarRating
                     value={testimonial.rating || 5}
-                    onChange={(value) => updateField(testimonial.id, 'rating', value)}
+                    onChange={value => updateField(testimonial.id, 'rating', value)}
                   />
                 </div>
 
@@ -317,7 +329,9 @@ export function TestimonialsEditor() {
                     <input
                       type="number"
                       value={testimonial.order || 0}
-                      onChange={(e) => updateField(testimonial.id, 'order', parseInt(e.target.value) || 0)}
+                      onChange={e =>
+                        updateField(testimonial.id, 'order', parseInt(e.target.value) || 0)
+                      }
                       className="w-14 px-2 py-1 bg-white/5 border border-white/10 rounded text-white text-sm text-center focus:outline-none focus:border-primary-500"
                       min={0}
                     />
@@ -327,7 +341,7 @@ export function TestimonialsEditor() {
                     <input
                       type="checkbox"
                       checked={testimonial.active !== false}
-                      onChange={(e) => updateField(testimonial.id, 'active', e.target.checked)}
+                      onChange={e => updateField(testimonial.id, 'active', e.target.checked)}
                       className="w-4 h-4 rounded border-white/20 bg-white/5 text-primary-600 focus:ring-primary-500 focus:ring-offset-0"
                     />
                     <span className="text-xs text-gray-400">Active</span>
@@ -340,7 +354,12 @@ export function TestimonialsEditor() {
                     title="Delete"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -354,8 +373,18 @@ export function TestimonialsEditor() {
       {testimonialsArray.length === 0 && !isLoading && (
         <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-8 text-center">
           <div className="w-16 h-16 bg-orange-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            <svg
+              className="w-8 h-8 text-orange-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
             </svg>
           </div>
           <h2 className="text-xl font-semibold text-white mb-2">No Testimonials Found</h2>
@@ -365,7 +394,12 @@ export function TestimonialsEditor() {
             className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
             </svg>
             Add Your First Testimonial
           </button>
@@ -378,7 +412,11 @@ export function TestimonialsEditor() {
         hasErrors={hasErrors}
         onSave={handleSave}
         onDiscard={handleDiscard}
-        isSaving={saveMutation.isPending}
+        isSaving={isSaving}
+        lastEditedBy={data?._metadata?.updatedBy}
+        lastEditedAt={data?._metadata?.updatedAt}
+        isConflict={isConflict}
+        onForceSave={handleForceSave}
       />
     </div>
   )

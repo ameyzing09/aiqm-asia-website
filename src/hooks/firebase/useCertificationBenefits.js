@@ -6,19 +6,19 @@ import { useFirebaseQuery } from '../useFirebaseQuery'
  * Returns: Array of benefit objects
  */
 export const useCertificationBenefits = () => {
-  return useFirebaseQuery(['certificationBenefits'], (data) => {
+  return useFirebaseQuery(['certificationBenefits'], data => {
     if (!data) return []
 
     // DEFENSIVE: Handle both array and object formats from Firebase
     const items = Array.isArray(data)
       ? data.map((item, index) => ({
           id: item.id || `benefit-${index}`,
-          ...item
+          ...item,
         }))
       : Object.entries(data).map(([id, item]) => ({ id, ...item }))
 
     return items
-      .map((item) => ({
+      .map(item => ({
         id: item.id,
         title: item.title || '',
         description: item.description || '',

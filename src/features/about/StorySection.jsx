@@ -23,8 +23,11 @@ function StorySkeleton() {
           </div>
         </div>
         <div className="flex flex-wrap gap-6">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="flex-1 min-w-[calc(50%-0.75rem)] lg:min-w-[calc(25%-1.125rem)] animate-pulse">
+          {[1, 2, 3, 4].map(i => (
+            <div
+              key={i}
+              className="flex-1 min-w-[calc(50%-0.75rem)] lg:min-w-[calc(25%-1.125rem)] animate-pulse"
+            >
               <div className="bg-gray-100 dark:bg-gray-700 rounded-xl p-6 h-40">
                 <div className="w-16 h-16 bg-gray-200 dark:bg-gray-600 rounded-xl mx-auto mb-4" />
                 <div className="h-6 w-20 bg-gray-200 dark:bg-gray-600 rounded mx-auto mb-2" />
@@ -61,17 +64,21 @@ export function StorySection() {
           </svg>
         ),
         title: 'IIT & IIM Alumni',
-        description: 'Founded by graduates from India\'s premier institutes'
+        description: "Founded by graduates from India's premier institutes",
       },
       {
         icon: (
           <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+            <path
+              fillRule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+              clipRule="evenodd"
+            />
           </svg>
         ),
         title: yearsExperience ? `${yearsExperience.value}${yearsExperience.suffix || '+'}` : '25+',
         subtitle: 'Years',
-        description: 'Over two decades of continuous excellence'
+        description: 'Over two decades of continuous excellence',
       },
       {
         icon: (
@@ -79,18 +86,26 @@ export function StorySection() {
             <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
           </svg>
         ),
-        title: professionals ? `${professionals.value?.toLocaleString?.() || professionals.value}${professionals.suffix || ''}` : '95,000+',
-        description: professionals?.label || 'Professionals trained across industries'
+        title: professionals
+          ? `${professionals.value?.toLocaleString?.() || professionals.value}${professionals.suffix || ''}`
+          : '95,000+',
+        description: professionals?.label || 'Professionals trained across industries',
       },
       {
         icon: (
           <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clipRule="evenodd" />
+            <path
+              fillRule="evenodd"
+              d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z"
+              clipRule="evenodd"
+            />
           </svg>
         ),
-        title: projects ? `${projects.value?.toLocaleString?.() || projects.value}${projects.suffix || ''}` : '11,000+',
-        description: projects?.label || 'Projects successfully delivered'
-      }
+        title: projects
+          ? `${projects.value?.toLocaleString?.() || projects.value}${projects.suffix || ''}`
+          : '11,000+',
+        description: projects?.label || 'Projects successfully delivered',
+      },
     ]
   }, [stats])
 
@@ -99,8 +114,10 @@ export function StorySection() {
     const professionals = stats?.find(s => s.id === 'professionals')
     const countries = stats?.find(s => s.id === 'countries')
     return {
-      professionals: professionals ? `${professionals.value?.toLocaleString?.() || professionals.value}${professionals.suffix || ''}` : '95,000+',
-      countries: countries?.value || 13
+      professionals: professionals
+        ? `${professionals.value?.toLocaleString?.() || professionals.value}${professionals.suffix || ''}`
+        : '95,000+',
+      countries: countries?.value || 13,
     }
   }, [stats])
 
@@ -121,7 +138,8 @@ export function StorySection() {
             {sectionHeader?.title || 'Our Story'}
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            {sectionHeader?.description || 'From humble beginnings to becoming India\'s premier quality excellence institute'}
+            {sectionHeader?.description ||
+              "From humble beginnings to becoming India's premier quality excellence institute"}
           </p>
         </div>
 
@@ -138,8 +156,18 @@ export function StorySection() {
                 />
               ) : (
                 <div className="text-center p-8">
-                  <svg className="w-20 h-20 mx-auto text-blue-600 dark:text-blue-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  <svg
+                    className="w-20 h-20 mx-auto text-blue-600 dark:text-blue-400 mb-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                    />
                   </svg>
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Image Placeholder: Company Founding
@@ -157,26 +185,41 @@ export function StorySection() {
             <div className="space-y-6">
               {story?.paragraphs?.length > 0 ? (
                 story.paragraphs.map((paragraph, index) => (
-                  <p key={index} className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+                  <p
+                    key={index}
+                    className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed"
+                  >
                     {paragraph}
                   </p>
                 ))
               ) : (
                 <>
                   <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-                    Founded in <span className="font-bold text-primary-600 dark:text-primary-400">{foundingYear}</span> by
-                    distinguished alumni from <span className="font-bold">{foundingInstitutes}</span>,
-                    AIQM India began with a singular vision: to transform quality management practices across India.
+                    Founded in{' '}
+                    <span className="font-bold text-primary-600 dark:text-primary-400">
+                      {foundingYear}
+                    </span>{' '}
+                    by distinguished alumni from{' '}
+                    <span className="font-bold">{foundingInstitutes}</span>, AIQM India began with a
+                    singular vision: to transform quality management practices across India.
                   </p>
                   <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-                    What started as a small training center in {foundingCity} has grown into India&apos;s most trusted partner in
-                    quality excellence, serving organizations across <span className="font-bold text-primary-600 dark:text-primary-400">{storyStats.countries} countries</span> and
-                    training over <span className="font-bold text-primary-600 dark:text-primary-400">{storyStats.professionals} professionals</span>.
+                    What started as a small training center in {foundingCity} has grown into
+                    India&apos;s most trusted partner in quality excellence, serving organizations
+                    across{' '}
+                    <span className="font-bold text-primary-600 dark:text-primary-400">
+                      {storyStats.countries} countries
+                    </span>{' '}
+                    and training over{' '}
+                    <span className="font-bold text-primary-600 dark:text-primary-400">
+                      {storyStats.professionals} professionals
+                    </span>
+                    .
                   </p>
                   <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-                    Our journey has been marked by continuous innovation, unwavering commitment to excellence, and
-                    a deep understanding of the unique challenges faced by Indian organizations in their quest for
-                    operational excellence.
+                    Our journey has been marked by continuous innovation, unwavering commitment to
+                    excellence, and a deep understanding of the unique challenges faced by Indian
+                    organizations in their quest for operational excellence.
                   </p>
                 </>
               )}
@@ -186,7 +229,7 @@ export function StorySection() {
 
         {/* Key Facts Flex Grid */}
         <div className="flex flex-wrap gap-6">
-          {keyFacts.map((fact) => (
+          {keyFacts.map(fact => (
             <div
               key={fact.title}
               className="flex-1 min-w-[calc(50%-0.75rem)] lg:min-w-[calc(25%-1.125rem)]"
@@ -199,9 +242,7 @@ export function StorySection() {
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                     {fact.title}
                   </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {fact.description}
-                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{fact.description}</p>
                 </div>
               </Card>
             </div>

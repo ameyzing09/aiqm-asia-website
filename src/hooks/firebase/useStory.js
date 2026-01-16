@@ -6,7 +6,7 @@ import { useFirebaseQuery } from '../useFirebaseQuery'
  * Returns: Object with story paragraphs and founding info
  */
 export const useStory = () => {
-  return useFirebaseQuery(['about', 'story'], (data) => {
+  return useFirebaseQuery(['about', 'story'], data => {
     if (!data) return null
 
     // DEFENSIVE: Handle both array and object formats for paragraphs

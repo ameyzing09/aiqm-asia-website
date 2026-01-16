@@ -15,8 +15,14 @@ export function Hero() {
     const countries = stats.find(s => s.id === 'countries')
 
     const parts = []
-    if (professionals) parts.push(`${professionals.value?.toLocaleString?.() || professionals.value}${professionals.suffix || ''} professionals trained`)
-    if (belts) parts.push(`${belts.value?.toLocaleString?.() || belts.value}${belts.suffix || ''} belts certified`)
+    if (professionals)
+      parts.push(
+        `${professionals.value?.toLocaleString?.() || professionals.value}${professionals.suffix || ''} professionals trained`
+      )
+    if (belts)
+      parts.push(
+        `${belts.value?.toLocaleString?.() || belts.value}${belts.suffix || ''} belts certified`
+      )
     if (countries) parts.push(`${countries.value} countries served`)
 
     return parts.join(' | ')
@@ -25,11 +31,11 @@ export function Hero() {
   // Default content (fallback if Firebase is empty)
   const defaultContent = {
     headline: "India's Leading Institute for",
-    highlightText: "Lean Six Sigma & Quality Excellence",
-    primaryCtaText: "Explore Courses",
-    primaryCtaLink: "/courses",
-    secondaryCtaText: "Get Certified",
-    secondaryCtaLink: "/certifications",
+    highlightText: 'Lean Six Sigma & Quality Excellence',
+    primaryCtaText: 'Explore Courses',
+    primaryCtaLink: '/courses',
+    secondaryCtaText: 'Get Certified',
+    secondaryCtaLink: '/certifications',
   }
 
   const isLoading = heroLoading || statsLoading
@@ -64,7 +70,9 @@ export function Hero() {
             </div>
           ) : (
             <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-4 max-w-3xl animate-slide-up">
-              {hero?.subheadline || subheadline || '95,000+ professionals trained | 40,000+ belts certified | 13 countries served'}
+              {hero?.subheadline ||
+                subheadline ||
+                '95,000+ professionals trained | 40,000+ belts certified | 13 countries served'}
             </p>
           )}
 

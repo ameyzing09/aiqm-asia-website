@@ -1,13 +1,15 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ref, get, update } from 'firebase/database'
+import { ref, get, update, serverTimestamp } from 'firebase/database'
 import { db } from '../../../../services/firebase'
+import { useAuth } from '../../../../hooks/useAuth'
 import { ValidatedInput } from '../components/ValidatedInput'
 import { ValidatedTextarea } from '../components/ValidatedTextarea'
 import { FormCard } from '../components/FormCard'
 import { SaveBar } from '../components/SaveBar'
 import { ImageAssetCard } from '../components/ImageAssetCard'
 import { useToast, getErrorMessage } from '../hooks/useToast'
+import { getMetadataTimestamp } from '../hooks/useAuditedSave'
 
 // Character limits for hero sections
 const CHAR_LIMITS = {
@@ -31,51 +33,53 @@ const PAGES = [
 const DEFAULT_CONTENT = {
   home: {
     headline: "India's Leading Institute for",
-    highlightText: "Lean Six Sigma & Quality Excellence",
-    subheadline: "",
-    primaryCtaText: "Explore Courses",
-    primaryCtaLink: "/courses",
-    secondaryCtaText: "Get Certified",
-    secondaryCtaLink: "/certifications",
+    highlightText: 'Lean Six Sigma & Quality Excellence',
+    subheadline: '',
+    primaryCtaText: 'Explore Courses',
+    primaryCtaLink: '/courses',
+    secondaryCtaText: 'Get Certified',
+    secondaryCtaLink: '/certifications',
   },
   certifications: {
-    headline: "Globally Recognized",
-    highlightText: "Certifications",
-    subheadline: "Elevate your career with internationally accredited certifications",
-    primaryCtaText: "Get Certified Today",
-    primaryCtaLink: "/courses",
-    secondaryCtaText: "View Courses",
-    secondaryCtaLink: "/courses",
-    badge: "Internationally Accredited",
+    headline: 'Globally Recognized',
+    highlightText: 'Certifications',
+    subheadline: 'Elevate your career with internationally accredited certifications',
+    primaryCtaText: 'Get Certified Today',
+    primaryCtaLink: '/courses',
+    secondaryCtaText: 'View Courses',
+    secondaryCtaLink: '/courses',
+    badge: 'Internationally Accredited',
   },
   consultancy: {
-    headline: "Driving Business Excellence",
-    highlightText: "Through Consultancy",
-    subheadline: "Partner with AIQM India to transform your organization",
-    primaryCtaText: "Request Consultation",
-    primaryCtaLink: "/contact",
-    secondaryCtaText: "View Case Studies",
-    secondaryCtaLink: "/case-studies",
-    badge: "Expert Consulting Services",
+    headline: 'Driving Business Excellence',
+    highlightText: 'Through Consultancy',
+    subheadline: 'Partner with AIQM India to transform your organization',
+    primaryCtaText: 'Request Consultation',
+    primaryCtaLink: '/contact',
+    secondaryCtaText: 'View Case Studies',
+    secondaryCtaLink: '/case-studies',
+    badge: 'Expert Consulting Services',
   },
   about: {
-    headline: "About",
-    highlightText: "AIQM India",
+    headline: 'About',
+    highlightText: 'AIQM India',
     subheadline: "India's most trusted partner for quality management excellence",
-    primaryCtaText: "Explore Courses",
-    primaryCtaLink: "/courses",
-    secondaryCtaText: "Our Services",
-    secondaryCtaLink: "/consultancy",
-    badge: "Est. 1998",
+    primaryCtaText: 'Explore Courses',
+    primaryCtaLink: '/courses',
+    secondaryCtaText: 'Our Services',
+    secondaryCtaLink: '/consultancy',
+    badge: 'Est. 1998',
   },
 }
 
 export function HeroEditor() {
   const queryClient = useQueryClient()
+  const { user } = useAuth()
   const { success, error } = useToast()
   const [activePage, setActivePage] = useState('home')
   const [formData, setFormData] = useState({})
   const [initialData, setInitialData] = useState({})
+  const [initialTimestamp, setInitialTimestamp] = useState(null)
 
   // Fetch hero data for active page
   const { data, isLoading } = useQuery({
@@ -87,14 +91,26 @@ export function HeroEditor() {
     staleTime: 5 * 60 * 1000,
   })
 
-  // Save mutation
+  // Save mutation with audit metadata
   const saveMutation = useMutation({
-    mutationFn: async (newData) => {
-      await update(ref(db, `siteContent/heroes/${activePage}`), newData)
+    mutationFn: async newData => {
+      const dataWithMeta = {
+        ...newData,
+        _metadata: {
+          updatedBy: user?.email || 'unknown',
+          updatedAt: serverTimestamp(),
+          updatedByUid: user?.uid || null,
+        },
+      }
+      await update(ref(db, `siteContent/heroes/${activePage}`), dataWithMeta)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['siteContent', 'heroes', activePage] })
       queryClient.invalidateQueries({ queryKey: ['heroes', activePage] })
+      success('Hero section saved successfully!')
+    },
+    onError: err => {
+      error(getErrorMessage(err))
     },
   })
 
@@ -103,11 +119,13 @@ export function HeroEditor() {
     if (data) {
       setFormData(data)
       setInitialData(data)
+      setInitialTimestamp(getMetadataTimestamp(data))
     } else {
       // Use defaults if no data
       const defaults = DEFAULT_CONTENT[activePage] || {}
       setFormData(defaults)
       setInitialData(defaults)
+      setInitialTimestamp(null)
     }
   }, [data, activePage])
 
@@ -137,9 +155,7 @@ export function HeroEditor() {
     try {
       await saveMutation.mutateAsync(formData)
       setInitialData(formData)
-      success('Hero section saved successfully!')
     } catch (err) {
-      error(getErrorMessage(err))
       console.error('Failed to save hero:', err)
     }
   }
@@ -150,7 +166,7 @@ export function HeroEditor() {
   }
 
   // Handle page change (with unsaved changes warning)
-  const handlePageChange = (pageId) => {
+  const handlePageChange = pageId => {
     if (isDirty) {
       if (!window.confirm('You have unsaved changes. Discard them?')) {
         return
@@ -167,13 +183,14 @@ export function HeroEditor() {
       <div>
         <h1 className="text-2xl font-bold text-white">Hero Sections</h1>
         <p className="text-gray-400 mt-1">
-          Edit hero banners for all pages. The homepage subheadline auto-builds from Stats if left empty.
+          Edit hero banners for all pages. The homepage subheadline auto-builds from Stats if left
+          empty.
         </p>
       </div>
 
       {/* Page Tabs */}
       <div className="flex flex-wrap gap-2">
-        {PAGES.map((page) => (
+        {PAGES.map(page => (
           <button
             key={page.id}
             onClick={() => handlePageChange(page.id)}
@@ -217,7 +234,7 @@ export function HeroEditor() {
                   wrapperClassName="col-span-12 lg:col-span-6"
                   label="Badge Text"
                   value={formData.badge || ''}
-                  onChange={(value) => updateField('badge', value)}
+                  onChange={value => updateField('badge', value)}
                   maxLength={CHAR_LIMITS.badge}
                   placeholder="e.g., Internationally Accredited"
                 />
@@ -228,7 +245,7 @@ export function HeroEditor() {
                 wrapperClassName="col-span-12 lg:col-span-6"
                 label="Headline"
                 value={formData.headline || ''}
-                onChange={(value) => updateField('headline', value)}
+                onChange={value => updateField('headline', value)}
                 maxLength={CHAR_LIMITS.headline}
                 placeholder="Main headline text"
                 required
@@ -239,7 +256,7 @@ export function HeroEditor() {
                 wrapperClassName="col-span-12 lg:col-span-6"
                 label="Highlight Text"
                 value={formData.highlightText || ''}
-                onChange={(value) => updateField('highlightText', value)}
+                onChange={value => updateField('highlightText', value)}
                 maxLength={CHAR_LIMITS.highlightText}
                 placeholder="Colored/emphasized text"
               />
@@ -247,13 +264,18 @@ export function HeroEditor() {
               {/* Subheadline */}
               <ValidatedTextarea
                 wrapperClassName="col-span-12"
-                label={activePage === 'home' ? "Subheadline (leave empty to auto-build from Stats)" : "Subheadline"}
+                label={
+                  activePage === 'home'
+                    ? 'Subheadline (leave empty to auto-build from Stats)'
+                    : 'Subheadline'
+                }
                 value={formData.subheadline || ''}
-                onChange={(value) => updateField('subheadline', value)}
+                onChange={value => updateField('subheadline', value)}
                 maxLength={CHAR_LIMITS.subheadline}
-                placeholder={activePage === 'home'
-                  ? "Leave empty to show stats automatically"
-                  : "Supporting text below the headline"
+                placeholder={
+                  activePage === 'home'
+                    ? 'Leave empty to show stats automatically'
+                    : 'Supporting text below the headline'
                 }
                 rows={2}
               />
@@ -272,14 +294,14 @@ export function HeroEditor() {
                 <ValidatedInput
                   label="Button Text"
                   value={formData.primaryCtaText || ''}
-                  onChange={(value) => updateField('primaryCtaText', value)}
+                  onChange={value => updateField('primaryCtaText', value)}
                   maxLength={CHAR_LIMITS.primaryCtaText}
                   placeholder="Explore Courses"
                 />
                 <ValidatedInput
                   label="Link URL"
                   value={formData.primaryCtaLink || ''}
-                  onChange={(value) => updateField('primaryCtaLink', value)}
+                  onChange={value => updateField('primaryCtaLink', value)}
                   maxLength={100}
                   placeholder="/courses"
                   type="url"
@@ -292,14 +314,14 @@ export function HeroEditor() {
                 <ValidatedInput
                   label="Button Text"
                   value={formData.secondaryCtaText || ''}
-                  onChange={(value) => updateField('secondaryCtaText', value)}
+                  onChange={value => updateField('secondaryCtaText', value)}
                   maxLength={CHAR_LIMITS.secondaryCtaText}
                   placeholder="Get Certified"
                 />
                 <ValidatedInput
                   label="Link URL"
                   value={formData.secondaryCtaLink || ''}
-                  onChange={(value) => updateField('secondaryCtaLink', value)}
+                  onChange={value => updateField('secondaryCtaLink', value)}
                   maxLength={100}
                   placeholder="/certifications"
                   type="url"
@@ -318,14 +340,24 @@ export function HeroEditor() {
                 <div className="col-span-12 lg:col-span-6">
                   <ImageAssetCard
                     value={formData.heroImage || ''}
-                    onChange={(url) => updateField('heroImage', url)}
+                    onChange={url => updateField('heroImage', url)}
                     storagePath={`heroes/${activePage}`}
                     label="Hero Image"
                     aspectRatio="aspect-video"
-                    maxSize="max-w-md"
+                    maxWidth="max-w-md"
                     placeholderIcon={
-                      <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      <svg
+                        className="w-10 h-10 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
                       </svg>
                     }
                   />
@@ -335,10 +367,7 @@ export function HeroEditor() {
           )}
 
           {/* Preview Section */}
-          <FormCard
-            title="Preview"
-            description="Live preview of your hero section"
-          >
+          <FormCard title="Preview" description="Live preview of your hero section">
             <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-8 text-center">
               {formData.badge && (
                 <span className="inline-block px-3 py-1 text-xs font-medium bg-primary-600/20 text-primary-400 rounded-full mb-4">
@@ -353,7 +382,8 @@ export function HeroEditor() {
                 </span>
               </h2>
               <p className="text-gray-400 text-sm mb-4 max-w-md mx-auto">
-                {formData.subheadline || (activePage === 'home' ? '(Auto-built from stats)' : 'Subheadline')}
+                {formData.subheadline ||
+                  (activePage === 'home' ? '(Auto-built from stats)' : 'Subheadline')}
               </p>
               <div className="flex gap-2 justify-center">
                 <span className="px-4 py-2 bg-primary-600 text-white text-sm rounded-lg">
@@ -375,6 +405,8 @@ export function HeroEditor() {
         onSave={handleSave}
         onDiscard={handleDiscard}
         isSaving={saveMutation.isPending}
+        lastEditedBy={data?._metadata?.updatedBy}
+        lastEditedAt={data?._metadata?.updatedAt}
       />
     </div>
   )

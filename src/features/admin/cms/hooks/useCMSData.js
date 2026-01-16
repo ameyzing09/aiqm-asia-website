@@ -17,7 +17,7 @@ export function useCMSData(section) {
 
   // Update data (partial update via Firebase update())
   const updateMutation = useMutation({
-    mutationFn: async (data) => {
+    mutationFn: async data => {
       await update(ref(db, `siteContent/${section}`), data)
     },
     onSuccess: () => {
@@ -41,7 +41,7 @@ export function useCMSData(section) {
 
   // Delete an item (for array management - testimonials, courses, etc.)
   const deleteMutation = useMutation({
-    mutationFn: async (itemId) => {
+    mutationFn: async itemId => {
       await remove(ref(db, `siteContent/${section}/${itemId}`))
     },
     onSuccess: () => {

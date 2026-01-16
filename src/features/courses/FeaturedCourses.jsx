@@ -26,9 +26,8 @@ export function FeaturedCourses() {
   const { data: sectionHeader } = useSectionHeaders('featuredCourses')
 
   // Filter to only featured courses, or take first 3 if no featured flag
-  const featuredCourses = allCourses?.filter(course => course.featured).slice(0, 3)
-    || allCourses?.slice(0, 3)
-    || []
+  const featuredCourses =
+    allCourses?.filter(course => course.featured).slice(0, 3) || allCourses?.slice(0, 3) || []
 
   return (
     <section id="courses" className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-900">
@@ -38,21 +37,16 @@ export function FeaturedCourses() {
             {sectionHeader?.title || 'Featured Certification Programs'}
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            {sectionHeader?.description || 'Industry-recognized certifications designed to transform your career'}
+            {sectionHeader?.description ||
+              'Industry-recognized certifications designed to transform your career'}
           </p>
         </div>
 
         <div className="flex flex-wrap justify-center gap-8">
-          {isLoading ? (
-            // Show 3 skeleton cards while loading
-            [1, 2, 3].map((i) => (
-              <FeaturedCourseSkeleton key={i} />
-            ))
-          ) : (
-            featuredCourses.map((course) => (
-              <CourseCard key={course.id} course={course} />
-            ))
-          )}
+          {isLoading
+            ? // Show 3 skeleton cards while loading
+              [1, 2, 3].map(i => <FeaturedCourseSkeleton key={i} />)
+            : featuredCourses.map(course => <CourseCard key={course.id} course={course} />)}
         </div>
       </div>
     </section>
