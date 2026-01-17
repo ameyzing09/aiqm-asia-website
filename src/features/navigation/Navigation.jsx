@@ -72,9 +72,17 @@ export function Navigation() {
             {/* Logo */}
             <div className="flex items-center">
               <Link to="/" className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-primary-800 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">AI</span>
-                </div>
+                {global?.companyInfo?.logo ? (
+                  <img
+                    src={global.companyInfo.logo}
+                    alt={companyName || 'Company Logo'}
+                    className="w-12 h-12 object-contain rounded-lg"
+                  />
+                ) : (
+                  <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-primary-800 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-xl">AI</span>
+                  </div>
+                )}
                 <div className="flex flex-col">
                   <span className="font-bold text-xl text-gray-900 dark:text-white">
                     {companyName}
