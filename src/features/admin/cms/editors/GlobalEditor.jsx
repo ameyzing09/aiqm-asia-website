@@ -5,6 +5,7 @@ import { db } from '../../../../services/firebase'
 import { ValidatedInput } from '../components/ValidatedInput'
 import { ValidatedTextarea } from '../components/ValidatedTextarea'
 import { FormCard } from '../components/FormCard'
+import { ImageAssetCard } from '../components/ImageAssetCard'
 import { SaveBar } from '../components/SaveBar'
 import { MasterDetailLayout } from '../components/MasterDetailLayout'
 import { useToast, getErrorMessage } from '../hooks/useToast'
@@ -371,6 +372,38 @@ export function GlobalEditor() {
               placeholder="Leading provider of quality management training..."
               rows={3}
             />
+
+            {/* Company Logo */}
+            <div className="col-span-12 pt-4 border-t border-white/10">
+              <ImageAssetCard
+                label="Company Logo"
+                value={formData.companyInfo?.logo || ''}
+                onChange={url => updateCompanyField('logo', url)}
+                storagePath="branding/logo"
+                aspectRatio="aspect-square"
+                maxWidth="max-w-[160px]"
+                maxSizeBytes={2 * 1024 * 1024}
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Displayed in the navigation bar. Recommended: square image, 200x200px or larger.
+              </p>
+            </div>
+
+            {/* Favicon */}
+            <div className="col-span-12 pt-4 border-t border-white/10">
+              <ImageAssetCard
+                label="Favicon"
+                value={formData.companyInfo?.favicon || ''}
+                onChange={url => updateCompanyField('favicon', url)}
+                storagePath="branding/favicon"
+                aspectRatio="aspect-square"
+                maxWidth="max-w-[160px]"
+                maxSizeBytes={1 * 1024 * 1024}
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Browser tab icon. Recommended: 32x32px, 64x64px, or SVG format.
+              </p>
+            </div>
 
             {/* Enquiry Link */}
             <div className="col-span-12 pt-4 border-t border-white/10">

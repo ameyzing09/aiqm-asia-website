@@ -28,6 +28,8 @@ export const useGlobal = () => {
         description: data.companyInfo?.description || '',
         establishedYear: data.companyInfo?.establishedYear || 1998,
         copyrightYear: data.companyInfo?.copyrightYear || new Date().getFullYear(),
+        logo: data.companyInfo?.logo || '',
+        favicon: data.companyInfo?.favicon || '',
       },
       contact: {
         email: data.contact?.email || '',

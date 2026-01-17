@@ -19,8 +19,12 @@ import { ConsultancyEditor } from './features/admin/cms/editors/ConsultancyEdito
 import { GlobalEditor } from './features/admin/cms/editors/GlobalEditor'
 import { CTABannersEditor } from './features/admin/cms/editors/CTABannersEditor'
 import { TeamManagementEditor } from './features/admin/cms/editors/TeamManagementEditor'
+import { useGlobal } from './hooks/firebase/useGlobal'
+import { useFavicon } from './hooks/useFavicon'
 
 function App() {
+  const { data: global } = useGlobal()
+  useFavicon(global?.companyInfo?.favicon)
   return (
     <AuthProvider>
       <Routes>
